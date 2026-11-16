@@ -1,0 +1,20 @@
+includes:
+    - vendor/yii2-extensions/phpstan/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - commands
+        - mail
+        - components
+        - controllers
+        - forms
+        - migrations
+        - models
+        - modules
+        - rest
+        - services
+    bootstrapFiles:
+        - vendor/yiisoft/yii2/Yii.php
+    yii2:
+        config_path: config/phpstan.php

@@ -1,0 +1,30 @@
+services:
+  hq_httpd:
+    container_name: hq_httpd
+    image: yiisoftware/yii2-php:8.3-apache
+    ports:
+      - "8080:80"
+    volumes:
+      # The image's Apache DocumentRoot is fixed at /app/web
+      - ./backend:/app
+    environment:
+      - PHP_ENABLE_XDEBUG=1
+      - XDEBUG_CONFIG=mode=debug client_port=9009 client_host=host.docker.internal
+      - PHP_IDE_CONFIG=serverName=hq.local
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - hq_mysql
+
+  hq_mysql:
+    image: mysql:8.0
+    container_name: hq_mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=database
+      - MYSQL_DATABASE=homequest
+      - TZ=Europe/Rome
+    cap_add:
+      - SYS_NICE

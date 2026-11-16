@@ -1,0 +1,12 @@
+RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule . index.php [L]
+
+# Uploaded recipe photos: images only, never sniffed or executed
+<IfModule mod_headers.c>
+    <If "%{REQUEST_URI} =~ m#^/uploads/#">
+        Header always set X-Content-Type-Options "nosniff"
+        Header always set Content-Security-Policy "default-src 'none'; img-src 'self'; sandbox"
+    </If>
+</IfModule>

@@ -1,0 +1,747 @@
+{
+  "app": {
+    "name": "HomeQuest",
+    "tagline": "Faccende, routine e menù di famiglia, in un gioco"
+  },
+  "common": {
+    "ok": "OK",
+    "cancel": "Annulla",
+    "close": "Chiudi",
+    "save": "Salva",
+    "delete": "Elimina",
+    "loading": "Caricamento…",
+    "retry": "Riprova",
+    "hello": "Ciao {name}!",
+    "edit": "Modifica",
+    "add": "Aggiungi",
+    "back": "Indietro",
+    "confirm": "Conferma"
+  },
+  "health": {
+    "checking": "Verifico la connessione al server…",
+    "ok": "Server raggiungibile",
+    "degraded": "Server raggiungibile, database non disponibile"
+  },
+  "errors": {
+    "unknown_error": "Si è verificato un errore imprevisto",
+    "network_error": "Connessione assente: controlla la rete e riprova",
+    "bad_request": "Richiesta non valida",
+    "unauthorized": "Accesso scaduto o non valido: entra di nuovo",
+    "forbidden": "Non hai i permessi per questa operazione",
+    "not_found": "Elemento non trovato",
+    "method_not_allowed": "Operazione non consentita",
+    "conflict": "I dati sono cambiati nel frattempo: ricarica e riprova",
+    "unsupported_media_type": "Formato non supportato",
+    "rate_limited": "Troppi tentativi: riprova tra qualche minuto",
+    "server_error": "Errore del server: riprova più tardi",
+    "validation_failed": "Controlla i dati inseriti",
+    "no_family": "Il tuo account non è ancora collegato a una famiglia",
+    "insufficient_points": "Punti insufficienti",
+    "invalid_transition": "Operazione non possibile in questo stato",
+    "checklist_incomplete": "Completa prima tutta la lista!",
+    "reward_limit_reached": "Limite di richieste per questo premio raggiunto",
+    "reward_unavailable": "Questo premio non è più disponibile",
+    "penalties_disabled": "Le penalità sono disattivate nelle impostazioni della famiglia",
+    "pairing_code_invalid": "Codice non valido o scaduto",
+    "pin_invalid": "PIN errato",
+    "image_invalid": "Immagine non valida: usa una foto JPG, PNG o WebP fino a 5 MB"
+  },
+  "toast": {
+    "dismiss": "Chiudi notifica"
+  },
+  "auth": {
+    "login": {
+      "title": "Accedi",
+      "intro": "Incolla il codice di accesso che ti ha dato chi gestisce HomeQuest.",
+      "token_label": "Codice di accesso",
+      "token_hint": "Lo trovi nel messaggio di attivazione del tuo account.",
+      "submit": "Entra",
+      "invalid_token": "Codice non valido o disattivato",
+      "child_link": "Sei un bambino? Collega questo dispositivo"
+    }
+  },
+  "nav": {
+    "dashboard": "Home",
+    "logout": "Esci",
+    "main": "Navigazione principale",
+    "children": "Figli",
+    "devices": "Dispositivi",
+    "tasks": "Compiti",
+    "approvals": "Da approvare",
+    "rewards": "Premi",
+    "child_today": "Oggi",
+    "child_rewards": "Premi",
+    "child_trophies": "Trofei",
+    "child_nav": "Menu bambino",
+    "recipes": "Ricette",
+    "menu": "Menù",
+    "child_menu": "Menù",
+    "shopping": "Spesa",
+    "child_shopping": "Spesa",
+    "stats": "Statistiche",
+    "settings": "Impostazioni"
+  },
+  "dashboard": {
+    "hello": "Ciao {name}!",
+    "family": "Famiglia {name}",
+    "role": {
+      "admin": "Amministratore",
+      "coparent": "Genitore"
+    },
+    "approvals": {
+      "none": "Nessun compito da approvare",
+      "some": "{count} compiti da approvare"
+    },
+    "rewards": {
+      "some": "{count} premi richiesti"
+    }
+  },
+  "avatar": {
+    "fox": "Volpe",
+    "bear": "Orso",
+    "cat": "Gatto",
+    "dog": "Cane",
+    "owl": "Gufo",
+    "panda": "Panda",
+    "lion": "Leone",
+    "rabbit": "Coniglio",
+    "unicorn": "Unicorno",
+    "dragon": "Drago",
+    "robot": "Robot",
+    "astronaut": "Astronauta",
+    "dino": "Dinosauro",
+    "penguin": "Pinguino",
+    "koala": "Koala",
+    "frog": "Rana"
+  },
+  "children": {
+    "title": "Figli",
+    "empty": "Non hai ancora aggiunto nessun figlio.",
+    "add": "Aggiungi figlio",
+    "new_title": "Nuovo figlio",
+    "edit_title": "Modifica {name}",
+    "level": "Livello {level}",
+    "points": "{points} punti",
+    "has_pin": "PIN attivo",
+    "archived_toggle": "Mostra archiviati",
+    "active_toggle": "Mostra attivi",
+    "saved": "Profilo salvato",
+    "archived": "{name} è stato archiviato",
+    "archive": "Archivia",
+    "archive_confirm_title": "Archiviare {name}?",
+    "archive_confirm_text": "Il profilo sparirà dai dispositivi; lo storico dei punti resta salvato.",
+    "form": {
+      "name": "Nome o soprannome",
+      "name_hint": "Niente cognome: basta il nome con cui lo chiamate.",
+      "avatar": "Avatar",
+      "color": "Colore",
+      "birth": "Mese e anno di nascita (facoltativo)",
+      "can_check_shopping": "Può spuntare la lista della spesa"
+    },
+    "pin": {
+      "title": "PIN",
+      "description": "Un PIN di 4 cifre impedisce ai fratelli di entrare nel profilo sbagliato.",
+      "label": "Nuovo PIN (4 cifre)",
+      "set": "Imposta PIN",
+      "remove": "Rimuovi PIN",
+      "saved": "PIN aggiornato",
+      "removed": "PIN rimosso"
+    }
+  },
+  "devices": {
+    "title": "Dispositivi",
+    "intro": "Collega il tablet o il telefono dei bambini: entreranno scegliendo il proprio avatar, senza password.",
+    "generate": "Genera codice di collegamento",
+    "code_title": "Codice di collegamento",
+    "code_instructions": "Sul dispositivo apri HomeQuest, scegli “Sono un bambino” e inserisci il codice, oppure inquadra il QR.",
+    "code_expires": "Scade alle {time}",
+    "qr_label": "QR code per collegare il dispositivo con il codice {code}",
+    "list_title": "Dispositivi collegati",
+    "empty": "Nessun dispositivo collegato.",
+    "last_seen": "Ultimo accesso: {when}",
+    "never_seen": "Mai usato",
+    "revoke": "Scollega",
+    "revoke_confirm_title": "Scollegare {name}?",
+    "revoke_confirm_text": "Il dispositivo dovrà essere collegato di nuovo con un nuovo codice.",
+    "revoked": "{name} scollegato"
+  },
+  "device": {
+    "title": "Collega questo dispositivo",
+    "intro": "Chiedi a mamma o papà il codice di collegamento: lo trovano in HomeQuest, in “Dispositivi”.",
+    "code_label": "Codice di collegamento",
+    "name_label": "Nome del dispositivo",
+    "name_default": "Tablet di casa",
+    "submit": "Collega",
+    "parent_link": "Sei un genitore? Accedi"
+  },
+  "profiles": {
+    "title": "Chi sei?",
+    "empty": "Non ci sono ancora profili: chiedi a un genitore di aggiungerli.",
+    "pin_title": "Ciao {name}! Inserisci il PIN",
+    "pin_wrong": "PIN sbagliato, riprova",
+    "pin_locked": "Troppi tentativi: riprova tra qualche minuto",
+    "unlink": "Scollega dispositivo"
+  },
+  "pinpad": {
+    "digit": "Cifra {digit}",
+    "delete": "Cancella",
+    "entered": "{count} cifre su 4"
+  },
+  "child": {
+    "today": {
+      "hello": "Ciao {name}!",
+      "points": "Hai {points} punti",
+      "level": "Livello {level}",
+      "empty": "Oggi niente compiti: goditi la giornata!",
+      "done": "Fatto!",
+      "waiting": "Aspetta mamma o papà",
+      "approved": "Fatto! +{points}",
+      "rejected": "Da rifare",
+      "missed": "Non fatto",
+      "points_short": "+{points}",
+      "celebrate": "Bravo! +{points} punti",
+      "level_up": "Sei salito al livello {level}!",
+      "checklist_progress": "{done} di {total}",
+      "new_badge": "Nuovo trofeo: {name}!",
+      "goal": "Obiettivo: {title}",
+      "goal_progress": "{points} su {cost} punti"
+    },
+    "switch_profile": "Cambia profilo"
+  },
+  "time_of_day": {
+    "morning": "Mattina",
+    "afternoon": "Pomeriggio",
+    "evening": "Sera",
+    "any": "In giornata"
+  },
+  "recurrence": {
+    "type": {
+      "none": "Una volta",
+      "daily": "Ogni giorno",
+      "weekly": "Giorni della settimana",
+      "interval": "Ogni N giorni"
+    },
+    "weekday_short": {
+      "0": "Lun",
+      "1": "Mar",
+      "2": "Mer",
+      "3": "Gio",
+      "4": "Ven",
+      "5": "Sab",
+      "6": "Dom"
+    },
+    "weekday_long": {
+      "0": "Lunedì",
+      "1": "Martedì",
+      "2": "Mercoledì",
+      "3": "Giovedì",
+      "4": "Venerdì",
+      "5": "Sabato",
+      "6": "Domenica"
+    },
+    "summary": {
+      "daily": "Ogni giorno",
+      "weekdays": "Dal lunedì al venerdì",
+      "weekend": "Nel weekend",
+      "interval": "Ogni {n} giorni",
+      "once": "Una volta",
+      "once_until": "Una volta, entro il {date}"
+    },
+    "every_n_days": "Ogni quanti giorni",
+    "due_date": "Scadenza (facoltativa)",
+    "start_date": "Dal",
+    "end_date": "Fino al (facoltativo)",
+    "quick": {
+      "weekdays": "Lun–Ven",
+      "weekend": "Weekend",
+      "all": "Tutti"
+    }
+  },
+  "tasks": {
+    "title": "Compiti e routine",
+    "empty": "Nessun compito: creane uno o scegli dalla libreria.",
+    "new": "Nuovo compito",
+    "from_library": "Dalla libreria",
+    "library_title": "Libreria compiti",
+    "library_age": "Età",
+    "library_all_ages": "Tutte le età",
+    "use": "Usa",
+    "new_title": "Nuovo compito",
+    "edit_title": "Modifica compito",
+    "inactive": "Disattivati",
+    "points": "{points} punti",
+    "requires_approval": "Da approvare",
+    "saved": "Compito salvato",
+    "deleted": "Compito eliminato",
+    "deactivated": "Compito disattivato (lo storico resta)",
+    "delete": "Elimina",
+    "delete_confirm_title": "Eliminare “{title}”?",
+    "delete_confirm_text": "Se è già stato svolto verrà solo disattivato, per non perdere lo storico dei punti.",
+    "no_children": "Prima aggiungi almeno un figlio.",
+    "form": {
+      "title": "Titolo",
+      "icon": "Icona (emoji)",
+      "description": "Descrizione (facoltativa)",
+      "points": "Punti",
+      "xp": "XP (facoltativo, uguale ai punti se vuoto)",
+      "requires_approval": "Serve la mia approvazione prima di dare i punti",
+      "recurrence": "Quando",
+      "time_of_day": "Momento della giornata",
+      "assignees": "Per chi",
+      "checklist": "Checklist (facoltativa)",
+      "checklist_add": "Aggiungi passaggio",
+      "checklist_item": "Passaggio {n}",
+      "checklist_remove": "Rimuovi passaggio {n}",
+      "checklist_up": "Sposta su",
+      "checklist_down": "Sposta giù",
+      "active": "Attivo"
+    },
+    "help_cook_note": "Collegato al menù"
+  },
+  "approvals": {
+    "title": "Da approvare",
+    "empty": "Niente da approvare: ottimo lavoro a tutti!",
+    "approve": "Approva",
+    "reject": "Rifiuta",
+    "approve_all": "Approva selezionati ({count})",
+    "select": "Seleziona {title} di {name}",
+    "approved": "Approvato: +{points} punti a {name}",
+    "bulk_approved": "{count} compiti approvati",
+    "rejected": "Rifiutato",
+    "reject_title": "Rifiutare “{title}”?",
+    "reject_note": "Spiega cosa manca (facoltativo)",
+    "submitted_on": "Fatto il {date}",
+    "tasks_section": "Compiti"
+  },
+  "task_templates": {
+    "brush_teeth_morning": "Lavarsi i denti (mattina)",
+    "brush_teeth_evening": "Lavarsi i denti (sera)",
+    "get_dressed": "Vestirsi da solo",
+    "make_bed": "Rifare il letto",
+    "pack_school_bag": "Preparare lo zaino",
+    "breakfast_dishes": "Sparecchiare la colazione",
+    "wash_hands": "Lavarsi le mani",
+    "shower": "Fare la doccia",
+    "bath_time": "Fare il bagnetto",
+    "pajamas": "Mettersi il pigiama",
+    "tidy_toys": "Mettere a posto i giochi",
+    "tidy_room": "Riordinare la camera",
+    "dirty_clothes_basket": "Vestiti sporchi nel cesto",
+    "set_table": "Apparecchiare la tavola",
+    "clear_table": "Sparecchiare la tavola",
+    "load_dishwasher": "Caricare la lavastoviglie",
+    "empty_dishwasher": "Svuotare la lavastoviglie",
+    "help_cook": "Aiutare a cucinare",
+    "water_plants": "Annaffiare le piante",
+    "feed_pet": "Dare da mangiare all’animale",
+    "walk_dog": "Portare fuori il cane",
+    "clean_litter": "Pulire la lettiera",
+    "homework": "Fare i compiti",
+    "read_book": "Leggere un libro",
+    "practice_instrument": "Esercitarsi con lo strumento",
+    "sign_school_diary": "Far firmare il diario",
+    "take_out_trash": "Portare fuori la spazzatura",
+    "sort_recycling": "Fare la raccolta differenziata",
+    "fold_laundry": "Piegare il bucato",
+    "match_socks": "Accoppiare i calzini",
+    "vacuum_room": "Passare l’aspirapolvere in camera",
+    "dust_shelves": "Spolverare le mensole",
+    "clean_bathroom_sink": "Pulire il lavandino del bagno",
+    "help_groceries": "Aiutare a fare la spesa",
+    "put_away_groceries": "Mettere a posto la spesa",
+    "shoes_in_place": "Scarpe al loro posto",
+    "outdoor_play": "Giocare all’aperto",
+    "drink_water": "Bere acqua",
+    "screen_off_on_time": "Spegnere gli schermi in orario",
+    "be_kind_sibling": "Essere gentile con i fratelli",
+    "call_grandparents": "Chiamare i nonni",
+    "prepare_clothes_tomorrow": "Preparare i vestiti per domani"
+  },
+  "badges": {
+    "first_task": {
+      "name": "Primo passo",
+      "description": "Il primo compito completato"
+    },
+    "tasks_10": {
+      "name": "Dieci di fila",
+      "description": "10 compiti completati"
+    },
+    "tasks_50": {
+      "name": "Superstar",
+      "description": "50 compiti completati"
+    },
+    "tasks_100": {
+      "name": "Centurione",
+      "description": "100 compiti completati"
+    },
+    "tasks_250": {
+      "name": "Leggenda",
+      "description": "250 compiti completati"
+    },
+    "streak_3": {
+      "name": "Scintilla",
+      "description": "3 giorni perfetti di fila"
+    },
+    "streak_7": {
+      "name": "Settimana perfetta",
+      "description": "7 giorni perfetti di fila"
+    },
+    "streak_14": {
+      "name": "Razzo",
+      "description": "14 giorni perfetti di fila"
+    },
+    "streak_30": {
+      "name": "Re della costanza",
+      "description": "30 giorni perfetti di fila"
+    },
+    "level_5": {
+      "name": "Livello 5",
+      "description": "Raggiunto il livello 5"
+    },
+    "level_10": {
+      "name": "Livello 10",
+      "description": "Raggiunto il livello 10"
+    },
+    "first_reward": {
+      "name": "Primo premio",
+      "description": "Il primo premio riscattato"
+    },
+    "rewards_10": {
+      "name": "Collezionista",
+      "description": "10 premi riscattati"
+    },
+    "early_bird": {
+      "name": "Mattiniero",
+      "description": "20 compiti del mattino"
+    },
+    "night_owl": {
+      "name": "Gufo",
+      "description": "20 compiti della sera"
+    },
+    "chef_helper": {
+      "name": "Chef aiutante",
+      "description": "Hai aiutato a cucinare"
+    }
+  },
+  "shop": {
+    "title": "Premi",
+    "empty": "Ancora nessun premio: chiedi a mamma o papà di aggiungerne!",
+    "want": "Lo voglio!",
+    "cost": "{cost} punti",
+    "not_enough": "Ti mancano {missing} punti",
+    "unavailable": "Non disponibile ora",
+    "set_goal": "Scegli come obiettivo",
+    "unset_goal": "Togli obiettivo",
+    "goal_set": "Obiettivo scelto!",
+    "requested": "Richiesta inviata! Aspetta mamma o papà",
+    "my_requests": "Le mie richieste",
+    "status": {
+      "requested": "In attesa",
+      "approved": "Approvato!",
+      "rejected": "Non stavolta",
+      "fulfilled": "Ricevuto"
+    }
+  },
+  "trophies": {
+    "title": "Trofei",
+    "level": "Livello {level}",
+    "xp": "{xp} XP · prossimo livello a {next}",
+    "streak": "Serie attuale",
+    "best_streak": "Record",
+    "days": "{n} giorni",
+    "locked": "Da sbloccare",
+    "earned": "Ottenuto"
+  },
+  "rewards": {
+    "title": "Premi",
+    "empty": "Nessun premio: aggiungine qualcuno per motivare i bambini.",
+    "new": "Nuovo premio",
+    "new_title": "Nuovo premio",
+    "edit_title": "Modifica premio",
+    "saved": "Premio salvato",
+    "deleted": "Premio rimosso",
+    "inactive": "Non attivo",
+    "limit": "Max {n} per {period}",
+    "stock": "Disponibili: {n}",
+    "period": {
+      "day": "giorno",
+      "week": "settimana",
+      "month": "mese"
+    },
+    "form": {
+      "title": "Nome del premio",
+      "icon": "Icona (emoji)",
+      "cost": "Costo in punti",
+      "limited": "Limita quante volte si può chiedere",
+      "limit_per_period": "Quante volte",
+      "limit_period": "Ogni",
+      "stock": "Quantità disponibile (facoltativa)",
+      "active": "Attivo"
+    },
+    "delete": "Rimuovi",
+    "requests_title": "Premi richiesti",
+    "approved": "Premio approvato: -{cost} punti a {name}",
+    "rejected": "Richiesta rifiutata",
+    "fulfill": "Consegnato",
+    "fulfilled": "Segnato come consegnato",
+    "to_deliver": "Da consegnare"
+  },
+  "points": {
+    "history": "Storico punti",
+    "empty": "Ancora nessun movimento.",
+    "load_more": "Carica altri",
+    "adjust_title": "Bonus o penalità",
+    "bonus": "Bonus",
+    "penalty": "Penalità",
+    "amount": "Punti",
+    "reason": "Motivo",
+    "give": "Assegna",
+    "given": "Fatto: {points} punti a {name}",
+    "penalties_off": "Le penalità sono disattivate (filosofia del rinforzo positivo).",
+    "type": {
+      "task": "Compito",
+      "bonus": "Bonus",
+      "penalty": "Penalità",
+      "reward": "Premio",
+      "streak_bonus": "Bonus serie",
+      "badge": "Trofeo",
+      "adjustment": "Correzione"
+    }
+  },
+  "shopping_categories": {
+    "frutta_verdura": "Frutta e verdura",
+    "pane_forno": "Pane e forno",
+    "latticini": "Latticini e uova",
+    "carne_pesce": "Carne e pesce",
+    "dispensa": "Dispensa",
+    "surgelati": "Surgelati",
+    "bevande": "Bevande",
+    "casa_igiene": "Casa e igiene",
+    "altro": "Altro"
+  },
+  "meal_type": {
+    "breakfast": "Colazione",
+    "lunch": "Pranzo",
+    "snack": "Merenda",
+    "dinner": "Cena"
+  },
+  "units": {
+    "g": "g",
+    "kg": "kg",
+    "ml": "ml",
+    "l": "l",
+    "pz": "pz",
+    "cucchiaio": "cucchiai",
+    "cucchiaino": "cucchiaini",
+    "qb": "q.b."
+  },
+  "recipe_tags": {
+    "veloce": "Veloce",
+    "vegetariano": "Vegetariano",
+    "preferito_bimbi": "Piace ai bimbi"
+  },
+  "recipes": {
+    "title": "Ricette",
+    "empty": "Il ricettario è vuoto: aggiungi la prima ricetta.",
+    "new": "Nuova ricetta",
+    "new_title": "Nuova ricetta",
+    "edit_title": "Modifica ricetta",
+    "search": "Cerca ricetta",
+    "all_tags": "Tutte",
+    "favorites": "Preferite",
+    "saved": "Ricetta salvata",
+    "deleted": "Ricetta eliminata",
+    "delete": "Elimina ricetta",
+    "delete_confirm_title": "Eliminare “{title}”?",
+    "delete_confirm_text": "Nei menù già pianificati resterà il nome del piatto.",
+    "minutes": "{n} min",
+    "servings": "{n} porzioni",
+    "form": {
+      "title": "Nome della ricetta",
+      "servings": "Porzioni",
+      "prep_minutes": "Minuti di preparazione",
+      "tags": "Etichette",
+      "favorite": "Preferita",
+      "instructions": "Procedimento",
+      "ingredients": "Ingredienti",
+      "ingredient": "Ingrediente",
+      "quantity": "Quantità",
+      "unit": "Unità",
+      "note": "Nota",
+      "add_ingredient": "Aggiungi ingrediente",
+      "remove_ingredient": "Rimuovi {name}",
+      "image": "Foto",
+      "image_upload": "Carica foto",
+      "image_remove": "Rimuovi foto",
+      "image_saved": "Foto aggiornata",
+      "image_after_save": "Potrai aggiungere una foto dopo aver salvato."
+    }
+  },
+  "menu": {
+    "title": "Menù della settimana",
+    "week_of": "Settimana dal {date}",
+    "prev_week": "Settimana precedente",
+    "next_week": "Settimana successiva",
+    "this_week": "Questa settimana",
+    "notes": "Note della settimana",
+    "notes_saved": "Note salvate",
+    "copy_last_week": "Copia settimana scorsa",
+    "copied": "Menù copiato",
+    "use_template": "Usa modello",
+    "save_template": "Salva come modello",
+    "template_name": "Nome del modello",
+    "template_saved": "Modello salvato",
+    "templates_empty": "Nessun modello salvato.",
+    "template_dishes": "{n} piatti",
+    "delete_template": "Elimina modello {name}",
+    "empty_slot": "—",
+    "edit_slot": "Modifica {meal} di {day}",
+    "servings": "Persone a tavola",
+    "add_recipe": "Aggiungi dal ricettario",
+    "add_free": "Oppure scrivi un piatto",
+    "add": "Aggiungi",
+    "remove_dish": "Rimuovi {title}",
+    "slot_saved": "Pasto aggiornato",
+    "proposed_by": "Proposta di {name}",
+    "accept": "Accetta",
+    "reject": "Rifiuta",
+    "votes": "{up} 👍 · {down} 👎",
+    "help_cook": "Crea compito “aiuta a cucinare”",
+    "help_cook_title": "Aiuta a cucinare: {title}",
+    "day_tabs": "Giorni della settimana"
+  },
+  "kid_menu": {
+    "title": "Menù",
+    "empty_day": "Ancora niente in programma",
+    "like": "Mi piace",
+    "dislike": "Non mi piace",
+    "propose": "Proponi un piatto",
+    "propose_title": "Cosa vorresti per {meal} di {day}?",
+    "propose_free": "Scrivi tu il piatto",
+    "send": "Invia proposta",
+    "proposed": "Proposta inviata!",
+    "already_proposed": "Hai già fatto una proposta per questo pasto",
+    "waiting": "In attesa di mamma o papà"
+  },
+  "shopping": {
+    "title": "Lista della spesa",
+    "new_list": "Nuova lista",
+    "new_list_name": "Nome della lista",
+    "delete_list": "Elimina lista",
+    "add_placeholder": "Cosa serve?",
+    "add": "Aggiungi",
+    "favorites": "Usati spesso",
+    "generate": "Genera dal menù",
+    "generated": "Lista aggiornata dal menù: {added} nuovi, {updated} aggiornati",
+    "clear_checked": "Togli gli spuntati",
+    "empty": "La lista è vuota.",
+    "offline": "Sei offline: le modifiche verranno inviate appena torna la connessione",
+    "pending": "{n} modifiche in attesa di invio",
+    "check": "Spunta {label}",
+    "uncheck": "Togli la spunta a {label}",
+    "remove": "Rimuovi {label}",
+    "have_it": "Ce l’ho già",
+    "from_menu": "dal menù",
+    "done_section": "Nel carrello",
+    "reorder": "Ordina reparti",
+    "reorder_title": "Ordine dei reparti",
+    "move_up": "Sposta su {name}",
+    "move_down": "Sposta giù {name}",
+    "order_saved": "Ordine salvato",
+    "generate_from_planner": "Genera lista spesa"
+  },
+  "kid_shopping": {
+    "title": "Spesa",
+    "empty": "Niente da comprare!",
+    "not_allowed": "Chiedi a mamma o papà di poter usare la lista della spesa."
+  },
+  "notifications": {
+    "task_submitted": {
+      "title": "Compito da approvare",
+      "body": "{name} ha finito: {title}"
+    },
+    "reward_requested": {
+      "title": "Premio richiesto",
+      "body": "{name} vorrebbe: {title}"
+    },
+    "dish_proposed": {
+      "title": "Nuova proposta per il menù",
+      "body": "{name} propone: {title}"
+    },
+    "routine_reminder": {
+      "title": "Ciao {name}!",
+      "body": "Hai ancora {count} compiti da fare"
+    },
+    "enable": "Attiva notifiche",
+    "disable": "Disattiva notifiche",
+    "enabled": "Notifiche attive su questo dispositivo",
+    "unsupported": "Questo browser non supporta le notifiche",
+    "unavailable": "Le notifiche non sono configurate sul server",
+    "denied": "Hai bloccato le notifiche: riattivale dalle impostazioni del browser",
+    "kid_enable": "Ricordami i compiti"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "family": "Famiglia",
+    "family_name": "Nome della famiglia",
+    "saved": "Impostazioni salvate",
+    "allow_penalties": "Consenti penalità (togliere punti)",
+    "allow_penalties_hint": "Disattivate di default: l’app punta sul rinforzo positivo.",
+    "weekly_email": "Riepilogo settimanale via email",
+    "weekly_email_hint": "Arriva il lunedì ai genitori con un indirizzo email configurato.",
+    "meal_types": "Pasti mostrati nel menù",
+    "week_starts_on": "La settimana inizia di",
+    "monday": "Lunedì",
+    "sunday": "Domenica",
+    "poll": "Aggiornamento lista spesa (secondi)",
+    "members": "Membri della famiglia",
+    "notifications": "Notifiche",
+    "devices_link": "Gestisci i dispositivi dei bambini"
+  },
+  "stats": {
+    "title": "Statistiche",
+    "last_7": "Ultimi 7 giorni",
+    "last_30": "Ultimi 30 giorni",
+    "completed": "Completati",
+    "missed": "Saltati",
+    "rate": "Completamento",
+    "earned": "Punti guadagnati",
+    "spent": "Punti spesi",
+    "streak": "Serie attuale",
+    "no_data": "—",
+    "empty": "Nessun figlio da mostrare.",
+    "chart_label": "Compiti per giorno di {name}",
+    "day_bar": "{date}: {approved} completati, {missed} saltati"
+  },
+  "privacy": {
+    "title": "Privacy e dati",
+    "link": "Privacy e dati della famiglia",
+    "info_title": "Come trattiamo i dati",
+    "export": "Scarica tutti i dati (JSON)",
+    "exported": "Download avviato",
+    "delete": "Elimina la famiglia",
+    "delete_title": "Eliminare definitivamente la famiglia?",
+    "delete_text": "Verranno cancellati subito e per sempre profili, compiti, punti, ricette, menù, liste e gli account dei genitori. Non si può annullare.",
+    "confirm_label": "Per confermare scrivi il nome della famiglia: {name}",
+    "admin_only": "Solo l’amministratore della famiglia può scaricare o cancellare i dati.",
+    "info": {
+      "1": "HomeQuest salva solo ciò che serve a far funzionare l’app: nome della famiglia, nomi o soprannomi dei bambini, avatar, compiti, punti, menù e liste della spesa.",
+      "2": "Per i bambini non chiediamo cognome, email, foto o data di nascita completa (al massimo anno e mese, facoltativi).",
+      "3": "Nessun servizio di analisi o pubblicità di terze parti; i registri tecnici non contengono i dati dei bambini.",
+      "4": "Il genitore amministratore è responsabile dei dati della famiglia e può scaricarli o cancellarli in ogni momento."
+    }
+  },
+  "onboarding": {
+    "title": "Benvenuti in HomeQuest!",
+    "intro": "Quattro passi per partire:",
+    "progress": "{done} di {total} fatti",
+    "dismiss": "Nascondi",
+    "steps": {
+      "child": "Aggiungi il profilo di un figlio",
+      "task": "Crea la prima routine o un compito",
+      "reward": "Aggiungi il primo premio",
+      "device": "Collega il tablet o il telefono dei bambini"
+    },
+    "done": "Fatto"
+  }
+}

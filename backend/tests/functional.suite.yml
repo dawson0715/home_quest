@@ -1,0 +1,12 @@
+# API tests: requests are processed in-process by the Yii app (config/test.php),
+# each test runs inside a DB transaction rolled back afterwards.
+actor: FunctionalTester
+modules:
+    enabled:
+      - Asserts
+      - Yii2:
+            transaction: true
+            cleanup: true
+      - REST:
+            depends: Yii2
+            url: /api/v1/
