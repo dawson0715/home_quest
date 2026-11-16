@@ -5,9 +5,14 @@ $local = is_file(__DIR__ . '/params-local.php') ? require __DIR__ . '/params-loc
 // Secrets (VAPID keys, mailer DSN) go in params-local.php, which is not committed.
 
 return array_replace_recursive([
-    'vapid' => [],
+    // production: backend/.env (VAPID_*, MAILER_*); development: params-local.php
+    'vapid' => array_filter([
+        'subject' => getenv('VAPID_SUBJECT') ?: null,
+        'publicKey' => getenv('VAPID_PUBLIC_KEY') ?: null,
+        'privateKey' => getenv('VAPID_PRIVATE_KEY') ?: null,
+    ]),
     // cross-origin callers allowed (dev servers); production serves app and API from the same origin
-    'corsOrigins' => ['http://localhost:5173', 'http://localhost:4173'],
-    'mailerFrom' => 'noreply@homequest.local',
-    'mailerDsn' => null,
+    'corsOrigins' => getenv('HQ_ENV') === 'prod' ? [] : ['http://localhost:5173', 'http://localhost:4173'],
+    'mailerFrom' => getenv('MAILER_FROM') ?: 'noreply@homequest.local',
+    'mailerDsn' => getenv('MAILER_DSN') ?: null,
 ], $local);

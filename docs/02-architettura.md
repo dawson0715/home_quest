@@ -189,7 +189,7 @@ Dev: `docker compose up -d` dalla root.
 | MySQL 8.0 | `hq_mysql` | `localhost:3306` | root / `database`, DB `homequest` (+ `homequest_test` per i test), `TZ=Europe/Rome`, nessun volume montato: `docker compose down` (o la ricreazione del container) azzera il DB → rilanciare `migrate` (e `seed/demo`) |
 | Frontend | — (host) | `http://localhost:5173` | `npm run dev`, proxy `/api` → `:8080` |
 
-Configurazione backend: file PHP in `backend/config/` (come nel progetto originale, niente `.env` per ora). I segreti stanno in `config/params-local.php` (non committato, letto da `params.php`): chiavi VAPID (`php yii push/generate-keys` stampa il file da copiare) e in futuro il DSN SMTP. Senza chiavi VAPID le push sono semplicemente disattivate (`/push/vapid-key` → `null`). Le credenziali di produzione non vanno committate: in deploy `config/` è escluso dalla sincronizzazione e mantenuto sul server.
+Configurazione backend: file PHP in `backend/config/` (come nel progetto originale; in produzione in più `backend/.env`). I segreti stanno in `config/params-local.php` (non committato, letto da `params.php`): chiavi VAPID (`php yii push/generate-keys` stampa il file da copiare) e in futuro il DSN SMTP. Senza chiavi VAPID le push sono semplicemente disattivate (`/push/vapid-key` → `null`). Le credenziali di produzione non vanno committate: stanno in `backend/.env` sul server, escluso dalla sincronizzazione insieme a `params-local.php`.
 
 Frontend: `PUBLIC_API_BASE=/api/v1`.
 
@@ -199,7 +199,6 @@ Fuso orario: unico, **Europe/Rome** (`timeZone` in `config/web.php`, `date_defau
 
 ## 9. CI e deploy (MVP)
 - CI: `.gitlab-ci.yml` nella root, stage `test`: `backend` (immagine `yiisoftware/yii2-php:8.3-apache` + servizio `mysql:8.0` con alias `hq_mysql`: migrate su `homequest_test`, codecept, phpstan) e `frontend` (immagine `mcr.microsoft.com/playwright:v<versione di @playwright/test>-noble`: lint, check, vitest, e2e). Aggiornando Playwright va aggiornato anche il tag dell'immagine.
-- Backend: il progetto originale usa `backend/.gitlab-ci.yml` (rsync su SSH, `config/` e `runtime/` esclusi) e `backend/.htaccess` (rewrite della root verso `web/`). **Il target punta ancora al server Chicco**: va riconfigurato (host, path, PHP 8.3) prima del primo deploy — task M8.4. Non eseguirlo prima.
-- Frontend: `npm run build` → contenuto di `frontend/build` servito da Apache sulla root del dominio, con fallback SPA; `/api/*` instradato a Yii.
-- Dopo il deploy: `php yii migrate --interactive=0`.
-- Cron: `* * * * * php yii cron/minute`, `0 * * * * php yii cron/daily`, `0 7 * * 1 php yii cron/weekly`.
+- Deploy: stage `deploy`, job **manuale** `build-web` da `main` (build del frontend) → `deploy` (composer `--no-dev`, rsync di `backend/` e della build in `/var/www-homequest/public` sulla VPS Ubuntu, variabile `DEPLOY_PATH`). La CI copia solo file: migration a mano. Server, cron, backup in **`docs/08-deploy.md`**, Apache e cartelle in **`docs/09-apache-e-cicd.md`**.
+- Produzione **senza Docker**, su un'unica origine `https://homequest.deplot.xyz`: Apache2 sull'host serve l'app da `public/`, `/api/*` a `backend/web/index.php` via PHP-FPM, `/uploads/*` statici; MySQL locale.
+- Configurazione di produzione in `backend/.env` (mai committato, modello `backend/.env.example`, caricato da `config/env.php`): `HQ_ENV=prod`, `DB_*`, `COOKIE_KEY`, `VAPID_*`, `MAILER_*`, `TRUSTED_PROXIES` (vuoto: nessun proxy); in sviluppo non c'è `.env` e valgono i default di `config/*.php` e `params-local.php`.

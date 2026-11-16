@@ -1,14 +1,13 @@
 <?php
 
+// Defaults = docker-compose.yml (development); production sets DB_* (backend/.env)
 return [
     'class' => 'yii\db\Connection',
-    'dsn' => 'mysql:host=hq_mysql;dbname=homequest',
-    'username' => 'root',
-    'password' => 'database',
+    'dsn' => sprintf('mysql:host=%s;dbname=%s', getenv('DB_HOST') ?: 'hq_mysql', getenv('DB_NAME') ?: 'homequest'),
+    'username' => getenv('DB_USER') ?: 'root',
+    'password' => getenv('DB_PASSWORD') ?: 'database',
     'charset' => 'utf8mb4',
-
-    // Schema cache options (for production environment)
-    //'enableSchemaCache' => true,
-    //'schemaCacheDuration' => 60,
-    //'schemaCache' => 'cache',
+    'enableSchemaCache' => getenv('HQ_ENV') === 'prod',
+    'schemaCacheDuration' => 3600,
+    'schemaCache' => 'cache',
 ];

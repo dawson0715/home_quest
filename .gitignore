@@ -19,3 +19,6 @@ frontend/.svelte-kit/
 frontend/build/
 frontend/test-results/
 frontend/playwright-report/
+
+# Production secrets
+deploy/.env

@@ -19,11 +19,17 @@ $config = [
     'components' => [
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
-            'cookieValidationKey' => 'jKS61kd8YiO-c8wVZvQJxBDpBr6rRhTT',
+            // the API uses no cookies; production still sets its own key (COOKIE_KEY)
+            'cookieValidationKey' => getenv('COOKIE_KEY') ?: 'jKS61kd8YiO-c8wVZvQJxBDpBr6rRhTT',
             // l'app è servita dalla root del dominio (rewrite verso web/), non da /web:
             // senza baseUrl esplicito Yii lo deduce da SCRIPT_NAME (/web/index.php) e lo
             // strip su REQUEST_URI (/api/...) fallisce, causando "Page not found".
             'baseUrl' => '',
+            // in produzione Apache mappa /api/* direttamente su web/index.php (AliasMatch):
+            // SCRIPT_NAME è l'URL richiesto, quindi lo script va dichiarato esplicitamente
+            'scriptUrl' => '/index.php',
+            // only behind a reverse proxy: trusted for X-Forwarded-For (rate limits per real IP)
+            'trustedHosts' => array_values(array_filter(explode(',', getenv('TRUSTED_PROXIES') ?: ''))),
             'parsers' => [
                 'application/json' => 'yii\web\JsonParser',
             ],

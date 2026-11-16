@@ -1,0 +1,30 @@
+# Production docroot = backend/web + frontend build (deploy/docker/Dockerfile).
+DirectoryIndex index.html
+Options -Indexes
+
+RewriteEngine On
+# API → Yii front controller
+RewriteRule ^api/ index.php [L]
+# Real files: app assets, icons, manifest, service worker, recipe photos
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+# Never fall back to the SPA for uploads / app assets that do not exist
+RewriteRule ^(uploads|_app)/ - [R=404,L]
+# Everything else: SvelteKit SPA
+RewriteRule ^ index.html [L]
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set Referrer-Policy "same-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    <If "%{REQUEST_URI} =~ m#^/uploads/#">
+        Header always set Content-Security-Policy "default-src 'none'; img-src 'self'; sandbox"
+    </If>
+    <If "%{REQUEST_URI} =~ m#^/_app/immutable/#">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </If>
+    <FilesMatch "(index\.html|service-worker\.js|manifest\.webmanifest)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+</IfModule>

@@ -13,6 +13,8 @@ Leggi sempre questo file per primo. Per i dettagli vedi `docs/`:
 | `docs/05-frontend.md` | Rotte SvelteKit, store, componenti, UX bambino vs genitore |
 | `docs/06-roadmap.md` | Milestone e task in ordine di implementazione |
 | `docs/07-convenzioni.md` | Stile codice, git, test, definizione di "fatto" |
+| `docs/08-deploy.md` | Produzione senza Docker: server, MySQL e PHP-FPM locali, `.env`, cron, backup |
+| `docs/09-apache-e-cicd.md` | Apache2 sull'host (certbot, `/api` → Yii) e cartelle copiate dal job CI/CD |
 
 ## Origine del backend
 
@@ -101,4 +103,4 @@ frontend/            # SvelteKit (da creare in M0)
 docs/
 ```
 
-CI: `.gitlab-ci.yml` nella root (test backend + frontend). `backend/.htaccess` (rewrite verso `web/`) e `backend/.gitlab-ci.yml` (deploy rsync) vengono dal progetto Chicco: quest'ultimo non è letto da GitLab nel monorepo, punta ancora al server Chicco e **non va attivato** finché non viene riconfigurato (M8.4).
+CI: `.gitlab-ci.yml` nella root (test backend + frontend, job `deploy` manuale da `main`). Produzione: VPS Ubuntu senza Docker (Apache2 + PHP-FPM + MySQL locali, homequest.deplot.xyz), modelli in `deploy/`, guide `docs/08-deploy.md` e `docs/09-apache-e-cicd.md`. Il deploy pubblica sul server reale: solo su richiesta esplicita.

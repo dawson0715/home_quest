@@ -42,3 +42,6 @@ tests/_support/_generated
 
 # Local secrets (VAPID keys, mailer DSN)
 /config/params-local.php
+
+# production settings (docs/08-deploy.md)
+/.env

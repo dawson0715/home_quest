@@ -1,0 +1,15 @@
+.git
+.idea
+android
+**/node_modules
+frontend/.svelte-kit
+frontend/build
+frontend/test-results
+frontend/playwright-report
+backend/vendor
+backend/runtime
+backend/web/assets/*
+backend/web/uploads
+backend/config/params-local.php
+deploy/docker/.env
+backend/.env

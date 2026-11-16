@@ -1,8 +1,8 @@
-# CI for the monorepo: lint + tests for backend and frontend (roadmap M0.7).
-# Deploy is intentionally absent (see docs/06-roadmap.md M8.4).
+# CI for the monorepo: lint + tests for backend and frontend, manual deploy (docs/09-apache-e-cicd.md).
 
 stages:
   - test
+  - deploy
 
 backend:
   stage: test
@@ -50,3 +50,54 @@ frontend:
     - npm run test:e2e
   rules:
     - changes: [frontend/**/*, .gitlab-ci.yml]
+
+# Manual, from main only. GitLab CI/CD variables (protected, masked):
+#   SSH_PRIVATE_KEY  key of the deploy user on the VPS
+#   DEPLOY_HOST      e.g. homequest.deplot.xyz
+#   DEPLOY_USER      user in the `docker` group, owner of DEPLOY_PATH
+#   DEPLOY_PATH      optional, default /var/www-homequest
+# Manual deploy from main (docs/09-apache-e-cicd.md): only replaces the web app
+# build ($DEPLOY_PATH/public) and the backend sources ($DEPLOY_PATH/backend).
+# Never touches backend/.env, config/params-local.php, runtime/, uploads, the DB:
+# migrations are run by hand on the server.
+build-web:
+  stage: deploy
+  image: node:22-alpine
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+  script:
+    - cd frontend
+    - npm ci --no-audit --no-fund
+    - npm run build
+  artifacts:
+    paths: [frontend/build/]
+    expire_in: 1 day
+
+deploy:
+  stage: deploy
+  image: yiisoftware/yii2-php:8.3-apache
+  needs: [build-web]
+  variables:
+    DEPLOY_PATH: /var/www-homequest
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  environment:
+    name: production
+    url: https://homequest.deplot.xyz
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq rsync openssh-client > /dev/null
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh && ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+  script:
+    - cd backend && composer install --no-dev --no-interaction --no-progress --prefer-dist --optimize-autoloader && cd ..
+    # backend sources + vendor; files that live only on the server are excluded (and so never deleted)
+    - >
+      rsync -az --delete
+      --exclude /.env --exclude /config/params-local.php
+      --exclude /runtime/ --exclude /web/uploads/ --exclude /web/assets/
+      --exclude /tests/ --exclude /codeception.yml --exclude /phpstan.neon --exclude /web/index-test.php
+      backend/ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/backend/"
+    # web app after the API
+    - rsync -az --delete frontend/build/ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/public/"

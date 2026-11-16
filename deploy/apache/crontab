@@ -1,0 +1,10 @@
+# Crontab of user deploy (server timezone Europe/Rome): crontab -e as deploy and paste.
+#   every minute → cron/minute (push reminders)
+#   every hour   → cron/daily  (today's occurrences, missed, streaks; idempotent)
+#   Monday 07:00 → cron/weekly (summary email)
+#   03:00        → DB + photo backup
+HQ=/var/www-homequest/backend
+* * * * * php $HQ/yii cron/minute >> $HQ/runtime/logs/cron.log 2>&1
+0 * * * * php $HQ/yii cron/daily >> $HQ/runtime/logs/cron.log 2>&1
+0 7 * * 1 php $HQ/yii cron/weekly >> $HQ/runtime/logs/cron.log 2>&1
+0 3 * * * /usr/local/bin/homequest-backup >> $HQ/runtime/logs/backup.log 2>&1
