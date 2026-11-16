@@ -48,6 +48,12 @@ Guard in `(child)/+layout.ts` e `(parent)/+layout.ts` (load universale, `await s
 
 Link e navigazione: sempre `resolve()` di `$app/paths` con l'**ID della rotta** (gruppi inclusi), es. `resolve('/(parent)/dashboard')`, `resolve('/(auth)/login')` — richiesto dai tipi di SvelteKit 3 e dalla regola ESLint `svelte/no-navigation-without-resolve`.
 
+## Layout genitore (stile Android / Material 3)
+- **Schermi compatti (< `lg`)**: top app bar con ☰ e titolo della sezione; **navigation drawer modale** (`<dialog>`: focus trap, Esc, tap sul velo per chiudere) con tutte le voci; **bottom navigation bar** con le tre sezioni principali **Compiti, Menù, Spesa** (indicatore a pillola sulla voce attiva). Il contenuto ha `pb-28` per non finire sotto la barra.
+- **Schermi larghi (≥ `lg`)**: drawer permanente a sinistra, niente bottom bar né ☰.
+- Voci del drawer: Home, Compiti, Menù, Spesa, Da approvare, Il mio gioco · Ricette, Premi, Figli, Statistiche, Impostazioni · Esci. Le etichette sono le stesse usate dagli e2e.
+- Area figlio: bottom bar con le stesse pillole Material (Oggi, Menù, Spesa se abilitata, Premi, Trofei).
+
 ## Lib
 
 ```

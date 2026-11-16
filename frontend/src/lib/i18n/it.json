@@ -81,7 +81,11 @@
     "child_shopping": "Spesa",
     "stats": "Statistiche",
     "settings": "Impostazioni",
-    "my_game": "Il mio gioco"
+    "my_game": "Il mio gioco",
+    "open_menu": "Apri menu",
+    "close_menu": "Chiudi menu",
+    "drawer": "Menu",
+    "bottom": "Sezioni principali"
   },
   "dashboard": {
     "hello": "Ciao {name}!",

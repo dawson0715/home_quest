@@ -198,7 +198,7 @@
 
   <form class="flex gap-2" onsubmit={add}>
     <input
-      class="min-h-12 flex-1 rounded-card border border-line bg-surface px-4 text-lg"
+      class="min-h-12 min-w-0 flex-1 rounded-card border border-line bg-surface px-4 text-lg"
       placeholder={t('shopping.add_placeholder')}
       aria-label={t('shopping.add_placeholder')}
       bind:value={label}

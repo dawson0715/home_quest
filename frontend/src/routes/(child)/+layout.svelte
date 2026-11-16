@@ -36,10 +36,13 @@
         <li class="flex-1">
           <a
             href={link.href}
-            class="flex min-h-20 flex-col items-center justify-center gap-1 text-base font-semibold aria-[current=page]:text-brand"
+            class="group flex min-h-20 flex-col items-center justify-center gap-1 text-base font-semibold text-ink-muted aria-[current=page]:text-ink"
             aria-current={page.url.pathname === link.href ? 'page' : undefined}
           >
-            <span class="text-3xl" aria-hidden="true">{link.icon}</span>
+            <span
+              class="grid h-9 w-16 place-items-center rounded-full text-3xl group-aria-[current=page]:bg-brand/20"
+              aria-hidden="true">{link.icon}</span
+            >
             {link.label}
           </a>
         </li>
