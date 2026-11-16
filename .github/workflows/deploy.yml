@@ -1,12 +1,11 @@
 # Tests + automatic deploy on push to main (docs/09-apache-e-cicd.md §5).
 # Same steps as .gitlab-ci.yml: the deploy runs only if backend and frontend tests pass.
 #
-# Repository secrets (Settings → Secrets and variables → Actions, environment "production"):
-#   SSH_PRIVATE_KEY  key of the deploy user on the VPS
-#   DEPLOY_HOST      e.g. homequest.deplot.xyz
-#   DEPLOY_USER      owner of DEPLOY_PATH
-# Variable (optional):
-#   DEPLOY_PATH      default /var/www-homequest
+# Settings → Secrets and variables → Actions (repository or environment "production"):
+#   secret   SSH_PRIVATE_KEY  key of the deploy user on the VPS
+#   variable DEPLOY_HOST      e.g. homequest.deplot.xyz (a secret works too)
+#   variable DEPLOY_USER      owner of DEPLOY_PATH (a secret works too)
+#   variable DEPLOY_PATH      optional, default /var/www-homequest
 #
 # Only replaces the web app build ($DEPLOY_PATH/public) and the backend sources
 # ($DEPLOY_PATH/backend). Never touches backend/.env, config/params-local.php,
@@ -88,10 +87,21 @@ jobs:
       name: production
       url: https://homequest.deplot.xyz
     env:
-      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      # host/user are not secret: accepted both as variables and as secrets
+      DEPLOY_HOST: ${{ vars.DEPLOY_HOST || secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ vars.DEPLOY_USER || secrets.DEPLOY_USER }}
       DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/var/www-homequest' }}
     steps:
+      - name: Check configuration
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          missing=0
+          for v in DEPLOY_HOST DEPLOY_USER SSH_PRIVATE_KEY; do
+            if [ -z "${!v}" ]; then echo "::error::$v is empty (Settings → Secrets and variables → Actions)"; missing=1; fi
+          done
+          exit $missing
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
@@ -121,11 +131,13 @@ jobs:
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_deploy
           chmod 600 ~/.ssh/id_deploy
-          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+          ssh-keyscan -T 15 -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+          test -s ~/.ssh/known_hosts || { echo "::error::ssh-keyscan got no host key from $DEPLOY_HOST"; exit 1; }
           printf 'Host %s\n  User %s\n  IdentityFile ~/.ssh/id_deploy\n  IdentitiesOnly yes\n' "$DEPLOY_HOST" "$DEPLOY_USER" >> ~/.ssh/config
 
       # backend sources + vendor; files that live only on the server are excluded (and so never deleted)
       - name: Deploy backend
+        timeout-minutes: 10
         run: >
           rsync -az --delete
           --exclude /.env --exclude /config/params-local.php
@@ -135,6 +147,7 @@ jobs:
 
       # web app after the API
       - name: Deploy web app
+        timeout-minutes: 10
         run: rsync -az --delete frontend/build/ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/public/"
 
       - name: Remove SSH key
