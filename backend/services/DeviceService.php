@@ -100,8 +100,7 @@ class DeviceService
      */
     public function profiles(Device $device): array
     {
-        return ChildProfile::find()
-            ->forFamily($device->family_id)
+        return ChildProfile::kids(ChildProfile::find()->forFamily($device->family_id))
             ->andWhere(['archived_at' => null])
             ->orderBy(['sort_order' => SORT_ASC, 'id' => SORT_ASC])
             ->all();
@@ -114,7 +113,7 @@ class DeviceService
     {
         $child = ChildProfile::find()
             ->forFamily($device->family_id)
-            ->andWhere(['id' => $childId, 'archived_at' => null])
+            ->andWhere(['id' => $childId, 'archived_at' => null, 'user_id' => null])
             ->one();
         if (!$child instanceof ChildProfile) {
             throw new NotFoundHttpException("Object not found: $childId");

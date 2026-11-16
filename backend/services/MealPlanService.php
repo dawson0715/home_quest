@@ -377,7 +377,7 @@ class MealPlanService
     private function defaultServings(): int
     {
         $parents = (int) FamilyMember::find()->forFamily($this->family->id)->count();
-        $children = (int) ChildProfile::find()->forFamily($this->family->id)->andWhere(['archived_at' => null])->count();
+        $children = (int) ChildProfile::kids(ChildProfile::find()->forFamily($this->family->id))->andWhere(['archived_at' => null])->count();
         return max(1, min(30, $parents + $children));
     }
 }

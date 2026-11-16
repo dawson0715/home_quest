@@ -25,6 +25,7 @@ final class ErrorCode
     public const INSUFFICIENT_POINTS = 'insufficient_points';
     public const INVALID_TRANSITION = 'invalid_transition';
     public const CHECKLIST_INCOMPLETE = 'checklist_incomplete';
+    public const TASK_TAKEN = 'task_taken';
     public const REWARD_LIMIT_REACHED = 'reward_limit_reached';
     public const REWARD_UNAVAILABLE = 'reward_unavailable';
     public const PENALTIES_DISABLED = 'penalties_disabled';

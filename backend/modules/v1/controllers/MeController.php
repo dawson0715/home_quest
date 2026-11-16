@@ -48,7 +48,7 @@ class MeController extends ApiController
     }
 
     /**
-     * GET /me/today (child): today's tasks grouped by time of day.
+     * GET /me/today (any player: child or parent): today's tasks grouped by time of day.
      *
      * @return array<string, mixed>
      */
@@ -56,9 +56,7 @@ class MeController extends ApiController
     {
         /** @var FamilyContext $context */
         $context = Yii::$app->get('familyContext');
-        $context->requireRole(FamilyContext::ROLE_CHILD);
-        /** @var ChildProfile $child */
-        $child = $context->getChild();
+        $child = $context->getPlayer();
 
         $groups = array_fill_keys(Task::TIMES_OF_DAY, []);
         foreach (TaskOccurrenceService::create()->today($child) as $occurrence) {
@@ -101,10 +99,7 @@ class MeController extends ApiController
     {
         /** @var FamilyContext $context */
         $context = Yii::$app->get('familyContext');
-        $context->requireRole(FamilyContext::ROLE_CHILD);
-        /** @var ChildProfile $child */
-        $child = $context->getChild();
-        return $child;
+        return $context->getPlayer();
     }
 
     /**
@@ -113,10 +108,12 @@ class MeController extends ApiController
     private function parentMe(User $actor): array
     {
         $member = FamilyMember::find()->with('family')->where(['user_id' => $actor->id])->one();
+        $player = $member === null ? null : ChildProfile::find()->forFamily($member->family_id)->andWhere(['user_id' => $actor->id])->one();
         return [
             'user' => $actor,
             'family' => $member?->family,
             'role' => $member?->role,
+            'player' => $player,
         ];
     }
 }

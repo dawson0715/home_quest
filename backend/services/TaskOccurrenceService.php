@@ -48,6 +48,7 @@ class TaskOccurrenceService
             ->innerJoinWith('task t')
             ->with(['task.checklistItems'])
             ->andWhere(['o.child_id' => $child->id])
+            ->andWhere(['not', ['o.status' => TaskOccurrence::STATUS_TAKEN]])
             ->andWhere(['or',
                 ['o.due_date' => $today],
                 ['and',
@@ -88,6 +89,9 @@ class TaskOccurrenceService
             $this->assertOpen($o);
             if (!$o->isChecklistComplete()) {
                 throw new ApiException(ErrorCode::CHECKLIST_INCOMPLETE, 'Complete the checklist first.', 422);
+            }
+            if ((bool) $o->task->is_open) {
+                $this->claimOpenTask($o);
             }
             $o->submitted_at = $this->clock->nowDb();
             if ((bool) $o->task->requires_approval) {
@@ -132,7 +136,35 @@ class TaskOccurrenceService
             $o->reviewed_by = $parentUserId;
             $o->review_note = $note;
             $o->save(false);
+            if ((bool) $o->task->is_open) {
+                // free again for everyone
+                TaskOccurrence::updateAll(
+                    ['status' => TaskOccurrence::STATUS_PENDING, 'updated_at' => time()],
+                    ['task_id' => $o->task_id, 'due_date' => $o->due_date, 'status' => TaskOccurrence::STATUS_TAKEN]
+                );
+            }
         });
+    }
+
+    /**
+     * Open task: the first player to complete it wins; the others' occurrences of
+     * the same day become `taken`. Siblings are locked so two players cannot win.
+     */
+    private function claimOpenTask(TaskOccurrence $o): void
+    {
+        $siblings = TaskOccurrence::findBySql(
+            'SELECT * FROM ' . TaskOccurrence::tableName() . ' WHERE task_id = :t AND due_date = :d AND id <> :id FOR UPDATE',
+            [':t' => $o->task_id, ':d' => $o->due_date, ':id' => $o->id]
+        )->all();
+        foreach ($siblings as $sibling) {
+            if (in_array($sibling->status, [TaskOccurrence::STATUS_SUBMITTED, TaskOccurrence::STATUS_APPROVED], true)) {
+                throw new ApiException(ErrorCode::TASK_TAKEN, 'Someone else already did this task.', 409);
+            }
+        }
+        TaskOccurrence::updateAll(
+            ['status' => TaskOccurrence::STATUS_TAKEN, 'updated_at' => time()],
+            ['task_id' => $o->task_id, 'due_date' => $o->due_date, 'status' => [TaskOccurrence::STATUS_PENDING, TaskOccurrence::STATUS_REJECTED]]
+        );
     }
 
     private function approveLocked(TaskOccurrence $o, ?int $parentUserId, ?string $note, TransitionResult $result): void

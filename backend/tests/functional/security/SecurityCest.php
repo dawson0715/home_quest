@@ -24,9 +24,8 @@ final class SecurityCest
         ['GET', 'meal-templates'], ['POST', 'shopping-lists'],
     ];
 
-    /** Child-only endpoints. */
+    /** Child-only endpoints (parents play too, so /me/today & co. are open to them). */
     private const CHILD_ONLY = [
-        ['GET', 'me/today'], ['GET', 'me/transactions'], ['PUT', 'me/savings-goal'],
         ['POST', 'meal-plans/2026-11-16/proposals'], ['GET', 'devices/profiles'],
     ];
 

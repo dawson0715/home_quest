@@ -1,11 +1,11 @@
-import { listChildren } from '#lib/api/endpoints/children.ts';
+import { listPlayers } from '#lib/api/endpoints/children.ts';
 import { listTaskTemplates } from '#lib/api/endpoints/tasks.ts';
 import type { PageLoad } from './$types';
 
 export const load: PageLoad = async ({ url }) => {
   const templateId = Number(url.searchParams.get('template'));
   const [children, templates] = await Promise.all([
-    listChildren(),
+    listPlayers(),
     templateId ? listTaskTemplates() : Promise.resolve([])
   ]);
   const mealSlot = Number(url.searchParams.get('meal_slot')) || null;

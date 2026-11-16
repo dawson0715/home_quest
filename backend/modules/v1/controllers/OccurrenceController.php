@@ -49,7 +49,7 @@ class OccurrenceController extends ApiController
         return array_map(fn (TaskOccurrence $o): array => $o->toArray([], ['child']), $query->all());
     }
 
-    /** PATCH /occurrences/{id}/checklist {item_id, done} (child, own occurrence) */
+    /** PATCH /occurrences/{id}/checklist {item_id, done} (any player, own occurrence) */
     public function actionChecklist(string $id): TaskOccurrence
     {
         $occurrence = $this->findForChild($id);
@@ -62,7 +62,7 @@ class OccurrenceController extends ApiController
     }
 
     /**
-     * POST /occurrences/{id}/submit (child, own occurrence)
+     * POST /occurrences/{id}/submit (any player — children and parents — own occurrence)
      *
      * @return array<string, mixed>
      */
@@ -125,10 +125,9 @@ class OccurrenceController extends ApiController
     private function findForChild(string $id): TaskOccurrence
     {
         $context = $this->context();
-        $context->requireRole(FamilyContext::ROLE_CHILD);
-        $child = $context->getChild();
+        $player = $context->getPlayer();
         $occurrence = TaskOccurrence::find()->forFamily($context->getId())
-            ->andWhere(['id' => (int) $id, 'child_id' => $child?->id])->one();
+            ->andWhere(['id' => (int) $id, 'child_id' => $player->id])->one();
         if (!$occurrence instanceof TaskOccurrence) {
             throw new NotFoundHttpException("Object not found: $id");
         }

@@ -77,13 +77,23 @@ export async function adjustPoints(
   ).data;
 }
 
-// Child side (explicit child session token)
-export async function listShop(childToken: string): Promise<ShopReward[]> {
-  return (await api.get<ShopReward[]>('rewards', { token: childToken })).data;
+// Player side: kids pass their child token; parents (playing too) omit it
+export async function listShop(childToken?: string): Promise<ShopReward[]> {
+  return (await api.get<ShopReward[]>('rewards?view=shop', childToken ? { token: childToken } : {}))
+    .data;
 }
 
-export async function redeemReward(childToken: string, rewardId: number): Promise<Redemption> {
-  return (await api.post<Redemption>(`rewards/${rewardId}/redeem`, {}, { token: childToken })).data;
+export async function redeemReward(
+  childToken: string | undefined,
+  rewardId: number
+): Promise<Redemption> {
+  return (
+    await api.post<Redemption>(
+      `rewards/${rewardId}/redeem`,
+      {},
+      childToken ? { token: childToken } : {}
+    )
+  ).data;
 }
 
 export async function listMyRedemptions(childToken: string): Promise<Redemption[]> {

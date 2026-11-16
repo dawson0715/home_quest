@@ -19,6 +19,7 @@ use yii\db\ActiveQuery;
  * @property int $points
  * @property int $xp
  * @property bool|int $requires_approval
+ * @property bool|int $is_open first player who completes it wins; no assignees = every player
  * @property string $recurrence_type
  * @property int|null $recurrence_days bitmask Mon=1 … Sun=64
  * @property int|null $interval_days
@@ -88,6 +89,9 @@ class Task extends FamilyScopedRecord
             ['end_date', 'compare', 'compareAttribute' => 'start_date', 'operator' => '>=', 'type' => 'string'],
             ['due_date', 'compare', 'compareAttribute' => 'start_date', 'operator' => '>=', 'type' => 'string'],
             ['linked_meal_slot_id', 'integer'],
+            ['is_open', 'default', 'value' => false],
+            ['is_open', 'boolean'],
+            ['is_open', 'filter', 'filter' => 'boolval'],
             ['is_active', 'default', 'value' => true],
             ['is_active', 'boolean'],
             ['is_active', 'filter', 'filter' => 'boolval'],
@@ -126,6 +130,7 @@ class Task extends FamilyScopedRecord
             'points' => fn (self $t): int => (int) $t->points,
             'xp' => fn (self $t): int => (int) $t->xp,
             'requires_approval' => fn (self $t): bool => (bool) $t->requires_approval,
+            'is_open' => fn (self $t): bool => (bool) $t->is_open,
             'recurrence_type',
             'recurrence_days' => fn (self $t): ?int => $t->recurrence_days === null ? null : (int) $t->recurrence_days,
             'interval_days' => fn (self $t): ?int => $t->interval_days === null ? null : (int) $t->interval_days,

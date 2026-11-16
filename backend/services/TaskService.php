@@ -91,6 +91,9 @@ class TaskService
     {
         $db = Task::getDb();
         $db->createCommand()->delete('{{%task_assignee}}', ['task_id' => $task->id])->execute();
+        if ($childIds === []) {
+            return;
+        }
         $db->createCommand()->batchInsert(
             '{{%task_assignee}}',
             ['task_id', 'child_id'],

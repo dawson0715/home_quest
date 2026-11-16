@@ -18,7 +18,7 @@ use yii\base\Model;
 class TaskForm extends Model
 {
     public const TASK_ATTRIBUTES = [
-        'title', 'description', 'icon', 'points', 'xp', 'requires_approval', 'recurrence_type',
+        'title', 'description', 'icon', 'points', 'xp', 'requires_approval', 'is_open', 'recurrence_type',
         'recurrence_days', 'interval_days', 'time_of_day', 'start_date', 'end_date', 'due_date', 'is_active',
         'linked_meal_slot_id',
     ];
@@ -83,8 +83,8 @@ class TaskForm extends Model
         if (array_key_exists('linked_meal_slot_id', $this->data)) {
             $this->validateMealSlot();
         }
-        if ($isNew || array_key_exists('assignee_ids', $this->data)) {
-            $this->validateAssignees($this->data['assignee_ids'] ?? null);
+        if ($isNew || array_key_exists('assignee_ids', $this->data) || array_key_exists('is_open', $this->data)) {
+            $this->validateAssignees($this->data['assignee_ids'] ?? ($isNew ? null : $this->task->getAssigneeIds()));
         }
         if (array_key_exists('checklist', $this->data)) {
             $this->validateChecklist($this->data['checklist']);
@@ -114,8 +114,12 @@ class TaskForm extends Model
 
     private function validateAssignees(mixed $ids): void
     {
+        if (is_array($ids) && $ids === [] && (bool) $this->task->is_open) {
+            $this->assigneeIds = []; // open to every player
+            return;
+        }
         if (!is_array($ids) || $ids === []) {
-            $this->addError('assignee_ids', 'Assign the task to at least one child.');
+            $this->addError('assignee_ids', 'Assign the task to at least one player (or make it open).');
             return;
         }
         $ids = array_values(array_unique(array_map('intval', $ids)));

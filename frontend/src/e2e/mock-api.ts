@@ -17,6 +17,8 @@ export interface FakeChild {
 
 export const PARENT_TOKEN = 'good-token';
 export const TODAY = '2026-11-16';
+/** game profile of the parent (Anna) */
+export const ADULT_ID = 2000;
 
 interface FakeTask {
   id: number;
@@ -24,6 +26,7 @@ interface FakeTask {
   icon: string;
   points: number;
   requires_approval: boolean;
+  is_open?: boolean;
   recurrence_type: string;
   recurrence_days: number | null;
   interval_days: number | null;
@@ -341,13 +344,31 @@ export function createFakeApi() {
     best_streak: 0,
     can_check_shopping: c.can_check_shopping,
     sort_order: 0,
-    archived: c.archived
+    archived: c.archived,
+    is_adult: c.id === ADULT_ID
   });
 
-  const taskJson = (task: FakeTask) => ({ ...task, description: null, xp: task.points });
+  const taskJson = (task: FakeTask) => ({
+    ...task,
+    is_open: !!task.is_open,
+    description: null,
+    xp: task.points
+  });
+  const adult: FakeChild = {
+    id: ADULT_ID,
+    name: 'Anna',
+    avatar: 'owl',
+    color: '#6B6B1F',
+    birth_year_month: null,
+    pin: null,
+    can_check_shopping: false,
+    archived: false
+  };
   const occJson = (o: FakeOccurrence) => {
     const task = tasks.find((x) => x.id === o.task_id) as FakeTask;
-    const child = children.find((c) => c.id === o.child_id) as FakeChild;
+    const child = (
+      o.child_id === ADULT_ID ? adult : children.find((c) => c.id === o.child_id)
+    ) as FakeChild;
     return {
       id: o.id,
       task_id: o.task_id,
@@ -359,6 +380,7 @@ export function createFakeApi() {
       points: task.points,
       time_of_day: task.time_of_day,
       requires_approval: task.requires_approval,
+      is_open: !!task.is_open,
       checklist: task.checklist.map((i) => ({ ...i, done: o.done.includes(i.id) })),
       submitted_at: null,
       reviewed_at: null,
@@ -449,7 +471,8 @@ export function createFakeApi() {
         return ok(route, {
           user: { id: 2, username: 'anna', name: 'Anna' },
           family,
-          role: 'admin'
+          role: 'admin',
+          player: childJson(adult)
         });
       }
       if (device)
@@ -466,7 +489,9 @@ export function createFakeApi() {
           evening: [],
           any: []
         };
-        for (const o of occurrences.filter((x) => x.child_id === childSession.id)) {
+        for (const o of occurrences.filter(
+          (x) => x.child_id === childSession.id && x.status !== 'taken'
+        )) {
           const task = tasks.find((x) => x.id === o.task_id) as FakeTask;
           groups[task.time_of_day].push(occJson(o));
         }
@@ -497,6 +522,13 @@ export function createFakeApi() {
       if (o && occMatch?.[2] === 'submit') {
         const task = tasks.find((x) => x.id === o.task_id) as FakeTask;
         if (o.done.length < task.checklist.length) return fail(route, 422, 'checklist_incomplete');
+        if (task.is_open) {
+          for (const sibling of occurrences.filter(
+            (x) => x.task_id === o.task_id && x !== o && x.status === 'pending'
+          )) {
+            sibling.status = 'taken';
+          }
+        }
         if (task.requires_approval) {
           o.status = 'submitted';
           return ok(route, {
@@ -861,6 +893,43 @@ export function createFakeApi() {
       );
     }
 
+    if (path === 'children' && url.searchParams.get('players') === '1') {
+      return ok(route, [...children.filter((c) => !c.archived), adult].map(childJson));
+    }
+    if (path === 'me/today') {
+      const groups: Record<string, unknown[]> = {
+        morning: [],
+        afternoon: [],
+        evening: [],
+        any: []
+      };
+      for (const o of occurrences.filter((x) => x.child_id === ADULT_ID && x.status !== 'taken')) {
+        groups[(tasks.find((x) => x.id === o.task_id) as FakeTask).time_of_day].push(occJson(o));
+      }
+      return ok(route, {
+        date: TODAY,
+        child: { ...childJson(adult), xp_level_start: 0, xp_next_level: 100 },
+        groups,
+        savings_goal: null
+      });
+    }
+    const adultOcc = path.match(/^occurrences\/(\d+)\/submit$/);
+    if (adultOcc) {
+      const o = occurrences.find((x) => x.id === Number(adultOcc[1]) && x.child_id === ADULT_ID);
+      if (!o) return fail(route, 404, 'not_found');
+      return ok(route, approve(o));
+    }
+    if (path === 'rewards' && url.searchParams.get('view') === 'shop') {
+      return ok(
+        route,
+        rewards.map((r) => ({
+          ...r,
+          affordable: (points.get(ADULT_ID) ?? 0) >= r.cost,
+          available: true,
+          is_goal: false
+        }))
+      );
+    }
     if (path === 'children' && method === 'GET') {
       const archived = url.searchParams.get('archived') === '1';
       return ok(route, children.filter((c) => c.archived === archived).map(childJson));

@@ -5,6 +5,11 @@ export async function listChildren(archived = false): Promise<Child[]> {
   return (await api.get<Child[]>(archived ? 'children?archived=1' : 'children')).data;
 }
 
+/** Every player: children + the parents' game profiles (task assignees, stats). */
+export async function listPlayers(): Promise<Child[]> {
+  return (await api.get<Child[]>('children?players=1')).data;
+}
+
 export async function getChild(id: number): Promise<Child> {
   return (await api.get<Child>(`children/${id}`)).data;
 }

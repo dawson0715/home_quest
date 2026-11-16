@@ -25,13 +25,15 @@ export async function bulkApprove(ids: number[]): Promise<BulkApproveResult> {
   return (await api.post<BulkApproveResult>('occurrences/bulk-approve', { ids })).data;
 }
 
-// Child side (explicit child session token)
-export async function getToday(childToken: string): Promise<Today> {
-  return (await api.get<Today>('me/today', { token: childToken })).data;
+// Player side: kids pass their child token; parents (playing too) pass undefined
+const as = (token?: string) => (token ? { token } : {});
+
+export async function getToday(childToken?: string): Promise<Today> {
+  return (await api.get<Today>('me/today', as(childToken))).data;
 }
 
 export async function setChecklistItem(
-  childToken: string,
+  childToken: string | undefined,
   id: number,
   itemId: number,
   done: boolean
@@ -40,12 +42,14 @@ export async function setChecklistItem(
     await api.patch<Occurrence>(
       `occurrences/${id}/checklist`,
       { item_id: itemId, done },
-      { token: childToken }
+      as(childToken)
     )
   ).data;
 }
 
-export async function submitOccurrence(childToken: string, id: number): Promise<TransitionResult> {
-  return (await api.post<TransitionResult>(`occurrences/${id}/submit`, {}, { token: childToken }))
-    .data;
+export async function submitOccurrence(
+  childToken: string | undefined,
+  id: number
+): Promise<TransitionResult> {
+  return (await api.post<TransitionResult>(`occurrences/${id}/submit`, {}, as(childToken))).data;
 }

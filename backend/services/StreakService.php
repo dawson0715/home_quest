@@ -55,6 +55,7 @@ class StreakService
             ->innerJoinWith('task t', false)
             ->andWhere(['o.child_id' => $child->id, 'o.due_date' => $day])
             ->andWhere(['not', ['t.recurrence_type' => Task::RECURRENCE_NONE]])
+            ->andWhere(['t.is_open' => false])
             ->select('o.status')
             ->column();
 

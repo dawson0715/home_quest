@@ -30,6 +30,10 @@
     </span>
   </header>
 
+  {#if o.is_open}
+    <p class="-mt-2 text-lg font-semibold text-brand">{t('child.today.open_badge')}</p>
+  {/if}
+
   {#if o.status === 'rejected' && o.review_note}
     <p class="rounded-lg bg-danger/10 p-3 text-danger">💬 {o.review_note}</p>
   {/if}

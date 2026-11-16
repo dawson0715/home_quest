@@ -168,9 +168,10 @@ final class OccurrenceCest
         $I->sendPost("occurrences/{$old->id}/submit");
         $I->seeErrorEnvelope(422, 'invalid_transition');
 
+        // parents play too, but only their own occurrences
         $I->amAuthenticatedAs($this->parent->user);
         $I->sendPost("occurrences/$lucaId/submit");
-        $I->seeErrorEnvelope(403, 'forbidden');
+        $I->seeErrorEnvelope(404, 'not_found');
     }
 
     public function otherFamiliesOccurrencesAreInvisible(FunctionalTester $I): void

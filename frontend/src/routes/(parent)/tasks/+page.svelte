@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
-  import { listChildren } from '#lib/api/endpoints/children.ts';
+  import { listPlayers } from '#lib/api/endpoints/children.ts';
   import { listTasks, listTaskTemplates } from '#lib/api/endpoints/tasks.ts';
   import { ApiError } from '#lib/api/errors.ts';
   import type { Child, Task, TaskTemplate } from '#lib/api/types.ts';
@@ -24,7 +24,7 @@
   const inactive = $derived(tasks.filter((x) => !x.is_active));
 
   $effect(() => {
-    Promise.all([listTasks(), listChildren()])
+    Promise.all([listTasks(), listPlayers()])
       .then(([tk, ch]) => {
         tasks = tk;
         children = ch;
@@ -62,7 +62,9 @@
         <span class="text-sm text-ink-muted">
           {describeRecurrence(task)} · {t(`time_of_day.${task.time_of_day}`)} · {t('tasks.points', {
             points: task.points
-          })}{task.requires_approval ? ` · ${t('tasks.requires_approval')}` : ''}
+          })}{task.requires_approval ? ` · ${t('tasks.requires_approval')}` : ''}{task.is_open
+            ? ` · 🏃 ${t('tasks.open_badge')}`
+            : ''}
         </span>
       </span>
       <span class="flex -space-x-2">

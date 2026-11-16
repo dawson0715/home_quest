@@ -53,6 +53,28 @@ class FamilyMember extends FamilyScopedRecord
         ];
     }
 
+    /**
+     * Every parent also plays: create their game profile on joining a family.
+     *
+     * @param array<string, mixed> $changedAttributes
+     */
+    public function afterSave($insert, $changedAttributes): void
+    {
+        parent::afterSave($insert, $changedAttributes);
+        if ($insert && !ChildProfile::find()->where(['user_id' => $this->user_id])->exists()) {
+            $user = User::findOne($this->user_id);
+            $player = new ChildProfile([
+                'name' => mb_substr((string) ($user->name ?? $user->username ?? 'Genitore'), 0, 40),
+                'avatar' => 'owl',
+                'color' => '#6B6B1F',
+                'sort_order' => 1000,
+            ]);
+            $player->family_id = $this->family_id;
+            $player->user_id = $this->user_id;
+            $player->save(false);
+        }
+    }
+
     public function getFamily(): ActiveQuery
     {
         return $this->hasOne(Family::class, ['id' => 'family_id']);

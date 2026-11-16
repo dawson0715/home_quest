@@ -38,7 +38,9 @@ class TaskOccurrence extends FamilyScopedRecord
     public const STATUS_APPROVED = 'approved';
     public const STATUS_REJECTED = 'rejected';
     public const STATUS_MISSED = 'missed';
-    public const STATUSES = [self::STATUS_PENDING, self::STATUS_SUBMITTED, self::STATUS_APPROVED, self::STATUS_REJECTED, self::STATUS_MISSED];
+    /** open task completed by another player */
+    public const STATUS_TAKEN = 'taken';
+    public const STATUSES = [self::STATUS_PENDING, self::STATUS_SUBMITTED, self::STATUS_APPROVED, self::STATUS_REJECTED, self::STATUS_MISSED, self::STATUS_TAKEN];
 
     public static function tableName(): string
     {
@@ -111,6 +113,7 @@ class TaskOccurrence extends FamilyScopedRecord
             'points' => fn (self $o): int => (int) $o->task->points,
             'time_of_day' => fn (self $o): string => $o->task->time_of_day,
             'requires_approval' => fn (self $o): bool => (bool) $o->task->requires_approval,
+            'is_open' => fn (self $o): bool => (bool) $o->task->is_open,
             'checklist' => fn (self $o): array => $o->getChecklist(),
             'submitted_at',
             'reviewed_at',

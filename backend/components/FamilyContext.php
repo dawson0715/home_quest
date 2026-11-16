@@ -115,6 +115,25 @@ class FamilyContext extends Component
         return $actor instanceof ChildSession ? $actor->child : null;
     }
 
+    /**
+     * The game profile of the caller: the child of a child session, or the
+     * parent's own profile. 403 for devices.
+     */
+    public function getPlayer(): ChildProfile
+    {
+        $actor = $this->getActor();
+        $player = match (true) {
+            $actor instanceof ChildSession => $actor->child,
+            $actor instanceof User => ChildProfile::find()->forFamily($this->getId())
+                ->andWhere(['user_id' => $actor->id, 'archived_at' => null])->one(),
+            default => null,
+        };
+        if (!$player instanceof ChildProfile) {
+            throw new ApiException(ErrorCode::FORBIDDEN, 'Only players can do this.', 403);
+        }
+        return $player;
+    }
+
     public function getDevice(): ?Device
     {
         $actor = $this->getActor();

@@ -26,7 +26,7 @@ final class SeedTest extends Unit
         $this->assertTrue(\app\models\User::find()->where(['username' => 'demo-anna'])->exists());
         $family = Family::findOne(['name' => 'Rossi']);
         $this->assertNotNull($family);
-        $this->assertSame(2, (int) ChildProfile::find()->where(['family_id' => $family->id])->count());
+        $this->assertSame(2, (int) ChildProfile::find()->where(['family_id' => $family->id, 'user_id' => null])->count());
         $this->assertSame(5, (int) Task::find()->where(['family_id' => $family->id])->count());
         $this->assertGreaterThan(5, (int) ShoppingItem::find()->innerJoinWith('list l', false)->count());
     }

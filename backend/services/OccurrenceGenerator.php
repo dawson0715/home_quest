@@ -33,13 +33,19 @@ class OccurrenceGenerator
 
         $now = time();
         $rows = [];
+        /** @var array<int, list<\app\models\ChildProfile>> $everyone */
+        $everyone = [];
         foreach ($query->each(200) as $task) {
             /** @var Task $task */
             if (!RecurrenceRule::isDue($task, $date)) {
                 continue;
             }
             $occurrenceDate = RecurrenceRule::occurrenceDate($task, $date);
-            foreach ($task->assignees as $child) {
+            $players = $task->assignees;
+            if ($players === [] && (bool) $task->is_open) {
+                $players = $everyone[$task->family_id] ??= \app\models\ChildProfile::find()->forFamily($task->family_id)->andWhere(['archived_at' => null])->all();
+            }
+            foreach ($players as $child) {
                 if ($child->archived_at !== null) {
                     continue;
                 }
@@ -74,7 +80,7 @@ class OccurrenceGenerator
             ->andWhere(['>=', 'due_date', $task->recurrence_type === Task::RECURRENCE_NONE ? '0000-01-01' : $today])
             ->all();
         foreach ($pending as $occurrence) {
-            $stillDue = in_array((int) $occurrence->child_id, $assigneeIds, true)
+            $stillDue = ($assigneeIds === [] && (bool) $task->is_open || in_array((int) $occurrence->child_id, $assigneeIds, true))
                 && RecurrenceRule::isDue($task, $task->recurrence_type === Task::RECURRENCE_NONE ? $today : $occurrence->due_date)
                 && RecurrenceRule::occurrenceDate($task, $occurrence->due_date) === $occurrence->due_date;
             if (!$stillDue) {

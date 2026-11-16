@@ -8,11 +8,13 @@ use Yii;
 use yii\behaviors\TimestampBehavior;
 
 /**
- * A child of the family (minor: no email, no surname — docs/02-architettura.md §7).
+ * A player of the family game. Children (user_id NULL; minors: no email, no surname —
+ * docs/02-architettura.md §7) and the game profile of each parent (user_id set).
  * Points/XP/level/streak are caches written only by PointsService/StreakService.
  *
  * @property int $id
  * @property int $family_id
+ * @property int|null $user_id set for the game profile of a parent
  * @property string $name
  * @property string $avatar
  * @property string $color
@@ -75,6 +77,17 @@ class ChildProfile extends FamilyScopedRecord
         ];
     }
 
+    public function isAdult(): bool
+    {
+        return $this->user_id !== null;
+    }
+
+    /** Restricts a query to children (not the parents' game profiles). */
+    public static function kids(\yii\db\ActiveQuery $query, string $alias = ''): \yii\db\ActiveQuery
+    {
+        return $query->andWhere([($alias === '' ? '' : "$alias.") . 'user_id' => null]);
+    }
+
     public function hasPin(): bool
     {
         return $this->pin_hash !== null;
@@ -121,22 +134,24 @@ class ChildProfile extends FamilyScopedRecord
             'can_check_shopping' => fn (self $c): bool => (bool) $c->can_check_shopping,
             'sort_order' => fn (self $c): int => (int) $c->sort_order,
             'archived' => fn (self $c): bool => $c->isArchived(),
+            'is_adult' => fn (self $c): bool => $c->isAdult(),
         ];
     }
 
     /**
      * Minimal public shape for the device profile picker.
      *
-     * @return array{id: int, name: string, avatar: string, color: string, has_pin: bool}
+     * @return array{id: int, name: string, avatar: string, color: string, has_pin: bool, is_adult: bool}
      */
     public function toProfile(): array
     {
         return [
-            'id' => $this->id,
+            'id' => (int) $this->id,
             'name' => $this->name,
             'avatar' => $this->avatar,
             'color' => $this->color,
             'has_pin' => $this->hasPin(),
+            'is_adult' => $this->isAdult(),
         ];
     }
 }

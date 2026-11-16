@@ -39,6 +39,7 @@
     "insufficient_points": "Punti insufficienti",
     "invalid_transition": "Operazione non possibile in questo stato",
     "checklist_incomplete": "Completa prima tutta la lista!",
+    "task_taken": "Qualcuno l’ha già fatto prima di te!",
     "reward_limit_reached": "Limite di richieste per questo premio raggiunto",
     "reward_unavailable": "Questo premio non è più disponibile",
     "penalties_disabled": "Le penalità sono disattivate nelle impostazioni della famiglia",
@@ -79,7 +80,8 @@
     "shopping": "Spesa",
     "child_shopping": "Spesa",
     "stats": "Statistiche",
-    "settings": "Impostazioni"
+    "settings": "Impostazioni",
+    "my_game": "Il mio gioco"
   },
   "dashboard": {
     "hello": "Ciao {name}!",
@@ -204,7 +206,8 @@
       "checklist_progress": "{done} di {total}",
       "new_badge": "Nuovo trofeo: {name}!",
       "goal": "Obiettivo: {title}",
-      "goal_progress": "{points} su {cost} punti"
+      "goal_progress": "{points} su {cost} punti",
+      "open_badge": "🏃 Chi prima arriva!"
     },
     "switch_profile": "Cambia profilo"
   },
@@ -294,9 +297,13 @@
       "checklist_remove": "Rimuovi passaggio {n}",
       "checklist_up": "Sposta su",
       "checklist_down": "Sposta giù",
-      "active": "Attivo"
+      "active": "Attivo",
+      "open": "Libero: lo prende chi lo fa per primo",
+      "open_hint": "Compare a tutti i giocatori scelti (o a tutti se non ne scegli nessuno): il primo che lo completa prende i punti.",
+      "adult": "genitore"
     },
-    "help_cook_note": "Collegato al menù"
+    "help_cook_note": "Collegato al menù",
+    "open_badge": "Libero"
   },
   "approvals": {
     "title": "Da approvare",
@@ -743,5 +750,12 @@
       "device": "Collega il tablet o il telefono dei bambini"
     },
     "done": "Fatto"
+  },
+  "my_game": {
+    "title": "Il mio gioco",
+    "intro": "Anche tu giochi: completa i tuoi compiti e accumula punti per i premi.",
+    "no_player": "Il tuo profilo di gioco non è disponibile.",
+    "shop": "Premi",
+    "tasks": "I miei compiti di oggi"
   }
 }

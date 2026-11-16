@@ -51,6 +51,9 @@ class RewardController extends ApiActiveController
         $query = Reward::find()->forFamily()->orderBy(['sort_order' => SORT_ASC, 'cost' => SORT_ASC, 'id' => SORT_ASC]);
 
         $child = $context->getChild();
+        if ($child === null && Yii::$app->request->get('view') === 'shop') {
+            $child = $context->getPlayer(); // a parent browsing the shop as a player
+        }
         if ($child instanceof ChildProfile) {
             $query->andWhere(['is_active' => true]);
             return RewardService::create()->shopFor($child, $query->all());
@@ -75,16 +78,14 @@ class RewardController extends ApiActiveController
         Yii::$app->response->statusCode = 204;
     }
 
-    /** POST /rewards/{id}/redeem (child) → 201 redemption `requested` */
+    /** POST /rewards/{id}/redeem (any player) → 201 redemption `requested` */
     public function actionRedeem(string $id): RewardRedemption
     {
         $this->checkAccess('redeem');
         $context = $this->context();
-        $context->requireRole(FamilyContext::ROLE_CHILD);
         /** @var Reward $reward */
         $reward = $this->findFamilyModel($id, $this->action);
-        /** @var ChildProfile $child */
-        $child = $context->getChild();
+        $child = $context->getPlayer();
         $redemption = RewardService::create()->request($child, $reward);
         Yii::$app->response->statusCode = 201;
         return $redemption;

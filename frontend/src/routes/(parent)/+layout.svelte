@@ -11,6 +11,7 @@
   const links = [
     { href: resolve('/(parent)/dashboard'), label: t('nav.dashboard') },
     { href: resolve('/(parent)/tasks'), label: t('nav.tasks') },
+    { href: resolve('/(parent)/my-game'), label: t('nav.my_game') },
     { href: resolve('/(parent)/approvals'), label: t('nav.approvals') },
     { href: resolve('/(parent)/menu/[[week]]', {}), label: t('nav.menu') },
     { href: resolve('/(parent)/recipes'), label: t('nav.recipes') },

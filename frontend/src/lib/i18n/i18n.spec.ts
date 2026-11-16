@@ -18,6 +18,7 @@ const BACKEND_ERROR_CODES = [
   'insufficient_points',
   'invalid_transition',
   'checklist_incomplete',
+  'task_taken',
   'reward_limit_reached',
   'reward_unavailable',
   'penalties_disabled',

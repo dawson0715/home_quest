@@ -44,12 +44,31 @@ class ChildController extends ApiActiveController
     public function prepareFamilyDataProvider(IndexAction $action, mixed $filter): ActiveDataProvider
     {
         $query = ChildProfile::find()->forFamily()->orderBy(['sort_order' => SORT_ASC, 'id' => SORT_ASC]);
+        if (Yii::$app->request->get('players')) {
+            // every player: children + parents' game profiles
+            return new ActiveDataProvider(['query' => $query->andWhere(['archived_at' => null]), 'pagination' => false]);
+        }
+        ChildProfile::kids($query);
         if (Yii::$app->request->get('archived')) {
             $query->andWhere(['not', ['archived_at' => null]]);
         } else {
             $query->andWhere(['archived_at' => null]);
         }
         return new ActiveDataProvider(['query' => $query, 'pagination' => false]);
+    }
+
+    /**
+     * Parents' game profiles are reachable for view/update/transactions/adjust
+     * but cannot be archived or get a PIN (they belong to the parent's account).
+     */
+    public function findFamilyModel(string $id, \yii\base\Action $action): \app\models\FamilyScopedRecord
+    {
+        /** @var ChildProfile $profile */
+        $profile = parent::findFamilyModel($id, $action);
+        if ($profile->isAdult() && in_array($action->id, ['delete', 'pin'], true)) {
+            throw new \yii\web\NotFoundHttpException("Object not found: $id");
+        }
+        return $profile;
     }
 
     /** Archives (soft-deletes) the child: history is kept. */

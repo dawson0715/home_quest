@@ -44,6 +44,7 @@
   let points = $state<number>(init.task?.points ?? init.draft.points ?? 10);
   let xp = $state<number | null>(init.task ? init.task.xp : null);
   let requiresApproval = $state(init.task?.requires_approval ?? true);
+  let isOpen = $state(init.task?.is_open ?? false);
   let recurrenceType = $state<RecurrenceType>(
     init.task?.recurrence_type ?? init.draft.recurrence_type ?? 'daily'
   );
@@ -55,8 +56,9 @@
   let endDate = $state<string | null>(init.task?.end_date ?? null);
   let timeOfDay = $state<TimeOfDay>(init.task?.time_of_day ?? init.draft.time_of_day ?? 'any');
   let isActive = $state(init.task?.is_active ?? true);
+  const kids = init.childrenList.filter((c) => !c.is_adult);
   let assignees = $state<number[]>(
-    init.task?.assignee_ids ?? (init.childrenList.length === 1 ? [init.childrenList[0].id] : [])
+    init.task?.assignee_ids ?? (kids.length === 1 ? [kids[0].id] : [])
   );
   let checklist = $state<{ id?: number; label: string; icon: string | null }[]>(
     init.task?.checklist.map((i) => ({ ...i })) ?? []
@@ -87,6 +89,7 @@
         points: Number(points),
         ...(xp !== null && xp !== undefined && String(xp) !== '' ? { xp: Number(xp) } : {}),
         requires_approval: requiresApproval,
+        is_open: isOpen,
         recurrence_type: recurrenceType,
         recurrence_days: recurrenceDays,
         interval_days: intervalDays === null ? null : Number(intervalDays),
@@ -208,6 +211,13 @@
 
   <fieldset class="flex flex-col gap-2">
     <legend class="mb-2 text-sm font-medium">{t('tasks.form.assignees')}</legend>
+    <label class="mb-2 flex items-start gap-3">
+      <input type="checkbox" class="mt-1 size-5 accent-brand" bind:checked={isOpen} />
+      <span>
+        🏃 {t('tasks.form.open')}
+        <span class="block text-sm text-ink-muted">{t('tasks.form.open_hint')}</span>
+      </span>
+    </label>
     <div class="flex flex-wrap gap-2">
       {#each childrenList as child (child.id)}
         <label
@@ -215,7 +225,7 @@
         >
           <input type="checkbox" class="sr-only" value={child.id} bind:group={assignees} />
           <ChildAvatar avatar={child.avatar} color={child.color} size="sm" decorative />
-          {child.name}
+          {child.name}{child.is_adult ? ` (${t('tasks.form.adult')})` : ''}
         </label>
       {/each}
     </div>

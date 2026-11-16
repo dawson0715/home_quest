@@ -59,6 +59,8 @@ export interface ParentMe {
   user: User;
   family: Family | null;
   role: FamilyRole | null;
+  /** the parent's own game profile */
+  player: Child | null;
 }
 
 export interface DeviceMe {
@@ -99,6 +101,7 @@ export interface ChildProfileCard {
   avatar: Avatar;
   color: string;
   has_pin: boolean;
+  is_adult?: boolean;
 }
 
 export interface SelectChildResult {
@@ -149,6 +152,8 @@ export interface Child {
   can_check_shopping: boolean;
   sort_order: number;
   archived: boolean;
+  /** game profile of a parent */
+  is_adult: boolean;
 }
 
 export interface ChildInput {
@@ -178,6 +183,8 @@ export interface Task {
   points: number;
   xp: number;
   requires_approval: boolean;
+  /** first player who completes it wins; no assignees = every player */
+  is_open: boolean;
   recurrence_type: RecurrenceType;
   recurrence_days: number | null;
   interval_days: number | null;
@@ -198,6 +205,7 @@ export interface TaskInput {
   points?: number;
   xp?: number;
   requires_approval?: boolean;
+  is_open?: boolean;
   recurrence_type?: RecurrenceType;
   recurrence_days?: number | null;
   interval_days?: number | null;
@@ -223,7 +231,8 @@ export interface TaskTemplate {
   recurrence_type: RecurrenceType;
 }
 
-export type OccurrenceStatus = 'pending' | 'submitted' | 'approved' | 'rejected' | 'missed';
+export type OccurrenceStatus =
+  'pending' | 'submitted' | 'approved' | 'rejected' | 'missed' | 'taken';
 
 export interface Occurrence {
   id: number;
@@ -236,6 +245,7 @@ export interface Occurrence {
   points: number;
   time_of_day: TimeOfDay;
   requires_approval: boolean;
+  is_open: boolean;
   checklist: (ChecklistItem & { done: boolean })[];
   submitted_at: string | null;
   reviewed_at: string | null;
