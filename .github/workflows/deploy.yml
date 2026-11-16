@@ -1,0 +1,142 @@
+# Tests + automatic deploy on push to main (docs/09-apache-e-cicd.md §5).
+# Same steps as .gitlab-ci.yml: the deploy runs only if backend and frontend tests pass.
+#
+# Repository secrets (Settings → Secrets and variables → Actions, environment "production"):
+#   SSH_PRIVATE_KEY  key of the deploy user on the VPS
+#   DEPLOY_HOST      e.g. homequest.deplot.xyz
+#   DEPLOY_USER      owner of DEPLOY_PATH
+# Variable (optional):
+#   DEPLOY_PATH      default /var/www-homequest
+#
+# Only replaces the web app build ($DEPLOY_PATH/public) and the backend sources
+# ($DEPLOY_PATH/backend). Never touches backend/.env, config/params-local.php,
+# runtime/, uploads, the DB: migrations are run by hand on the server.
+
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # re-run by hand (e.g. rollback from an older commit)
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    container:
+      image: yiisoftware/yii2-php:8.3-apache
+    services:
+      hq_mysql: # same host name as docker-compose (config/test_db.php)
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: database
+          MYSQL_DATABASE: homequest_test
+          TZ: Europe/Rome
+    env:
+      XDEBUG_MODE: 'off'
+      COMPOSER_ALLOW_SUPERUSER: '1'
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: vendor-${{ hashFiles('backend/composer.lock') }}
+      - run: composer install --no-interaction --no-progress
+      - name: Wait for MySQL
+        run: for i in $(seq 1 30); do php -r 'new PDO("mysql:host=hq_mysql", "root", "database");' >/dev/null 2>&1 && break; sleep 2; done
+      - run: php tests/bin/yii migrate --interactive=0
+      - run: vendor/bin/codecept build
+      - run: vendor/bin/codecept run
+      - run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+  frontend:
+    runs-on: ubuntu-latest
+    container:
+      # Must match @playwright/test in frontend/package-lock.json (browsers preinstalled)
+      image: mcr.microsoft.com/playwright:v1.65.1-noble
+      options: --ipc=host
+    env:
+      HOME: /root # Firefox refuses a HOME owned by another user
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: frontend/.npm
+          key: npm-${{ hashFiles('frontend/package-lock.json') }}
+      - run: npm ci --cache .npm --prefer-offline
+      - run: npm run lint
+      - run: npm run check
+      - run: npm run test
+      - run: npm run test:e2e
+
+  deploy:
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://homequest.deplot.xyz
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/var/www-homequest' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Build web app
+        working-directory: frontend
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+          coverage: none
+      - name: Backend production dependencies
+        working-directory: backend
+        run: composer install --no-dev --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+      - name: SSH setup
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+          printf 'Host %s\n  User %s\n  IdentityFile ~/.ssh/id_deploy\n  IdentitiesOnly yes\n' "$DEPLOY_HOST" "$DEPLOY_USER" >> ~/.ssh/config
+
+      # backend sources + vendor; files that live only on the server are excluded (and so never deleted)
+      - name: Deploy backend
+        run: >
+          rsync -az --delete
+          --exclude /.env --exclude /config/params-local.php
+          --exclude /runtime/ --exclude /web/uploads/ --exclude /web/assets/
+          --exclude /tests/ --exclude /codeception.yml --exclude /phpstan.neon --exclude /web/index-test.php
+          backend/ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/backend/"
+
+      # web app after the API
+      - name: Deploy web app
+        run: rsync -az --delete frontend/build/ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/public/"
+
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_deploy
