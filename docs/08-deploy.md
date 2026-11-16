@@ -1,14 +1,24 @@
 # 08 — Deploy in produzione
 
-Produzione: VPS **Ubuntu 24.04**, dominio **homequest.deplot.xyz**, **senza Docker**: tutto gira direttamente sulla macchina.
+Produzione: VPS **Ubuntu 24.04**, dominio **homequest.deplot.xyz**. In `deploy/` ci sono due varianti:
+
+| Cartella | Variante | Uso |
+|---|---|---|
+| `deploy/apache/` | **Apache2 + PHP-FPM + MySQL direttamente sull'host**, senza Docker | **produzione** (questa guida §1–5, Apache e CI/CD in `09-apache-e-cicd.md`) |
+| `deploy/docker/` | stack Docker Compose (app, cron, MySQL, backup, Caddy HTTPS) | alternativa autonoma, deploy a mano (§6) |
+
+Il job CI `deploy` usa la variante **Apache**.
+
+## Variante Apache (produzione)
+
 
 | Componente | Dove | Note |
 |---|---|---|
 | Apache2 | host | HTTPS (certbot); serve l'app web da `/var/www-homequest/public` e `/api/*` a Yii — **`09-apache-e-cicd.md`** |
-| PHP 8.3-FPM | pool `homequest` (`deploy/php-fpm/homequest.conf`) | gira come utente `deploy`, socket `/run/php/homequest-fpm.sock` |
+| PHP 8.3-FPM | pool `homequest` (`deploy/apache/php-fpm-homequest.conf`) | gira come utente `deploy`, socket `/run/php/homequest-fpm.sock` |
 | MySQL 8.0 | host, `localhost` | DB `homequest`, utente `homequest` |
-| Cron | crontab dell'utente `deploy` (`deploy/crontab`) | `cron/minute` ogni minuto, `cron/daily` ogni ora, `cron/weekly` lunedì 07:00, backup alle 03:00 |
-| Backup | `deploy/backup.sh` → `/var/backups/homequest` | dump DB + foto ricette, 14 giorni |
+| Cron | crontab dell'utente `deploy` (`deploy/apache/crontab`) | `cron/minute` ogni minuto, `cron/daily` ogni ora, `cron/weekly` lunedì 07:00, backup alle 03:00 |
+| Backup | `deploy/apache/backup.sh` → `/var/backups/homequest` | dump DB + foto ricette, 14 giorni |
 
 ```
 /var/www-homequest/            proprietario deploy
@@ -62,7 +72,7 @@ MySQL ascolta solo su `127.0.0.1` (default Ubuntu): la porta 3306 non va aperta.
 ### PHP-FPM
 
 ```bash
-sudo cp deploy/php-fpm/homequest.conf /etc/php/8.3/fpm/pool.d/homequest.conf   # dal repository
+sudo cp deploy/apache/php-fpm-homequest.conf /etc/php/8.3/fpm/pool.d/homequest.conf   # dal repository
 sudo php-fpm8.3 -t && sudo systemctl reload php8.3-fpm
 ls -l /run/php/homequest-fpm.sock     # deve esistere
 ```
@@ -91,8 +101,8 @@ Il pool fissa fuso, limiti di upload (6 MB, l'API accetta foto fino a 5 MB) e lo
    ```
 5. **Cron e backup**:
    ```bash
-   sudo install -o deploy -m 755 deploy/backup.sh /usr/local/bin/homequest-backup   # dal repository
-   sudo -u deploy crontab -e      # incolla deploy/crontab
+   sudo install -o deploy -m 755 deploy/apache/backup.sh /usr/local/bin/homequest-backup   # dal repository
+   sudo -u deploy crontab -e      # incolla deploy/apache/crontab
    ```
 6. **Apache e HTTPS**: `09-apache-e-cicd.md` §2–4.
 
@@ -134,3 +144,43 @@ Prova del backup a mano: `sudo -u deploy /usr/local/bin/homequest-backup`.
 | Apache | `/var/log/apache2/homequest.access.log` (senza query string), `homequest.error.log` |
 
 Monitoraggio esterno minimo: un uptime checker su `/api/v1/health` (risponde 503 se il DB non è raggiungibile). Error tracking (GlitchTip/Sentry EU) non ancora integrato.
+
+## 6. Variante Docker (`deploy/docker/`)
+
+Alternativa alla variante Apache, **non usata dalla CI**. Tutto gira in container, con questi servizi definiti in `deploy/docker/docker-compose.prod.yml` (progetto `homequest`):
+
+| Servizio | Cosa fa |
+|---|---|
+| `caddy` | HTTPS automatico (Let's Encrypt) per `$DOMAIN` sulle porte 80/443 |
+| `app` | immagine `deploy/docker/Dockerfile`: Apache + PHP 8.3 con l'API Yii e la build del frontend sulla stessa origine (`apache.htaccess`: `/api/*` → Yii, file reali, poi fallback SPA) |
+| `cron` | stessa immagine, `cron.sh`: `cron/minute` ogni minuto, `cron/daily` ogni ora, `cron/weekly` lunedì 07:00 |
+| `db` | MySQL 8.0, volume `db-data` |
+| `backup` | `mysqldump` ogni giorno alle 03:00 nel volume `backups`, 14 giorni |
+
+Configurazione in `deploy/docker/.env` (modello `.env.example`, mai committato), passata ai container come variabili d'ambiente.
+
+```bash
+# server: Docker Engine + plugin compose, firewall 80/443 aperto, niente Apache sull'host (porte 80/443 a Caddy)
+# copia del repository (dalla macchina di sviluppo)
+rsync -az --delete --exclude .git --exclude android --exclude node_modules --exclude frontend/.svelte-kit \
+  --exclude frontend/build --exclude backend/vendor --exclude backend/runtime --exclude deploy/docker/.env \
+  ./ deploy@homequest.deplot.xyz:/var/www-homequest/
+
+# sul server
+cd /var/www-homequest/deploy/docker
+cp .env.example .env && nano .env          # password DB, COOKIE_KEY, MAILER_*
+docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml exec app php yii migrate --interactive=0
+docker compose -f docker-compose.prod.yml exec app php yii push/generate-keys   # chiavi in .env, poi `up -d`
+docker compose -f docker-compose.prod.yml exec app php yii user/create anna "Anna"
+docker compose -f docker-compose.prod.yml exec app php yii family/create "Rossi" anna
+```
+
+Aggiornamento: stesso rsync, poi `up -d --build` e `migrate`.
+
+Backup:
+- elenco: `docker compose -f docker-compose.prod.yml exec backup ls -lh /backups`;
+- copia di un dump: `docker compose -f docker-compose.prod.yml cp backup:/backups/<file> .`;
+- foto ricette: volume `homequest_uploads`.
+
+Log: `docker compose -f docker-compose.prod.yml logs -f app cron caddy`.

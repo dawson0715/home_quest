@@ -18,9 +18,9 @@ File nel repository:
 
 | File | Uso |
 |---|---|
-| `deploy/apache2/homequest-http.conf` | vhost iniziale solo HTTP, per ottenere il certificato |
-| `deploy/apache2/homequest.conf` | vhost definitivo (redirect 80→443, HTTPS, `/api`, `/uploads`, app) |
-| `deploy/php-fpm/homequest.conf` | pool PHP-FPM (`08-deploy.md` §1) |
+| `deploy/apache/homequest-http.conf` | vhost iniziale solo HTTP, per ottenere il certificato |
+| `deploy/apache/homequest.conf` | vhost definitivo (redirect 80→443, HTTPS, `/api`, `/uploads`, app) |
+| `deploy/apache/php-fpm-homequest.conf` | pool PHP-FPM (`08-deploy.md` §1) |
 
 Verificati su Ubuntu 24.04 (Apache 2.4 + PHP 8.3-FPM):
 - `apache2ctl configtest`;
@@ -50,7 +50,7 @@ sudo a2dismod php8.3 mpm_prefork && sudo a2enmod mpm_event
 Servono già i file in `/var/www-homequest/public` (§5), altrimenti la home risponde 403.
 
 ```bash
-sudo cp deploy/apache2/homequest-http.conf /etc/apache2/sites-available/homequest.conf   # dal repository
+sudo cp deploy/apache/homequest-http.conf /etc/apache2/sites-available/homequest.conf   # dal repository
 sudo a2ensite homequest
 sudo apache2ctl configtest && sudo systemctl reload apache2
 
@@ -84,7 +84,7 @@ sudo certbot certonly --webroot -w /var/www/certbot \
   -d homequest.deplot.xyz --email info@deplot.xyz --agree-tos --no-eff-email
 
 # vhost definitivo
-sudo cp deploy/apache2/homequest.conf /etc/apache2/sites-available/homequest.conf
+sudo cp deploy/apache/homequest.conf /etc/apache2/sites-available/homequest.conf
 sudo apache2ctl configtest && sudo systemctl reload apache2
 ```
 
@@ -156,7 +156,7 @@ Le esclusioni proteggono questi percorsi anche da `--delete`. **Qualunque altro 
 |---|---|
 | Database | MySQL locale, `/var/lib/mysql` |
 | Backup | `/var/backups/homequest` (14 giorni) |
-| vhost Apache | `/etc/apache2/sites-available/homequest.conf`, copiato a mano da `deploy/apache2/` |
+| vhost Apache | `/etc/apache2/sites-available/homequest.conf`, copiato a mano da `deploy/apache/` |
 | Pool PHP-FPM | `/etc/php/8.3/fpm/pool.d/homequest.conf` |
 | Certificati | `/etc/letsencrypt/live/homequest.deplot.xyz/` |
 | Log | `08-deploy.md` §5 |

@@ -67,7 +67,7 @@ Ogni milestone termina con: test verdi, demo funzionante con `seed/demo`, doc ag
 - [x] M8.1 Privacy: export dati, cancellazione famiglia, informativa, pagina impostazioni privacy
 - [x] M8.2 Hardening: rate limit, header sicurezza, revisione permessi (test per ogni endpoint × ruolo)
 - [x] M8.3 E2E Playwright dei flussi principali (20 scenari sul finto backend in CI + `npm run test:e2e:live` contro il backend vero con i dati di `seed/demo`)
-- [x] M8.4 Deploy produzione: VPS senza Docker (Apache2 + PHP-FPM + MySQL locali, modelli in `deploy/`, cron, backup giornalieri 14 gg), job CI `build-web` manuale + `deploy` da `main`, guide `docs/08-deploy.md` e `docs/09-apache-e-cicd.md` (Ubuntu, homequest.deplot.xyz). Error tracking esterno non ancora integrato
+- [x] M8.4 Deploy produzione: VPS senza Docker (Apache2 + PHP-FPM + MySQL locali, modelli in `deploy/apache/`, cron, backup giornalieri 14 gg), job CI `build-web` manuale + `deploy` da `main`, guide `docs/08-deploy.md` e `docs/09-apache-e-cicd.md` (Ubuntu, homequest.deplot.xyz); alternativa Docker Compose in `deploy/docker/`. Error tracking esterno non ancora integrato
 - [x] M8.5 Onboarding guidato per nuova famiglia (crea figlio → prima routine → primo premio)
 
 ## Prompt suggeriti per Claude Code
