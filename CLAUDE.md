@@ -23,10 +23,10 @@ Leggi sempre questo file per primo. Per i dettagli vedi `docs/`:
 ## Stack
 
 - **Frontend**: SvelteKit 2 + Svelte 5 (runes), TypeScript strict, Tailwind CSS 4, PWA. Cartella `frontend/` nella root del repo (da creare in M0).
-- **Backend**: Yii2 (template *basic*, solo API REST, nessuna view), PHP 8.3. Cartella `backend/`.
+- **Backend**: Yii2 (template *basic*, solo API REST, nessuna view), PHP 8.5. Cartella `backend/`.
 - **Database**: MySQL 8.0 (DB `homequest`, test `homequest_test`), charset `utf8mb4`, collation `utf8mb4_unicode_ci`. Schema solo via migration Yii.
 - **Auth (fase attuale)**: Bearer token statici risolti da `app\components\ApiAuth`: utente genitore (`user.access_token`, creato da console), dispositivo (`d_…`) e sessione figlio (`c_…`), questi ultimi salvati come SHA-256. Nessuna registrazione/login via API per ora; JWT + refresh token rimandati (vedi roadmap).
-- **Dev env**: Docker Compose nella root, due container: `hq_httpd` (`yiisoftware/yii2-php:8.3-apache`, `backend/` montato in `/app`, DocumentRoot `/app/web`) e `hq_mysql` (MySQL 8.0, nessun volume montato: i dati vivono solo nel container).
+- **Dev env**: Docker Compose nella root, due container: `hq_httpd` (`yiisoftware/yii2-php:8.5-apache`, `backend/` montato in `/app`, DocumentRoot `/app/web`) e `hq_mysql` (MySQL 8.0, nessun volume montato: i dati vivono solo nel container).
 
 ## Comandi
 
@@ -103,4 +103,4 @@ frontend/            # SvelteKit (da creare in M0)
 docs/
 ```
 
-CI: `.gitlab-ci.yml` nella root (test backend + frontend, job `deploy` manuale da `main`). Produzione: VPS Ubuntu senza Docker (Apache2 + PHP-FPM + MySQL locali, homequest.deplot.xyz), modelli in `deploy/apache/`; alternativa Docker in `deploy/docker/`, guide `docs/08-deploy.md` e `docs/09-apache-e-cicd.md`. Il deploy pubblica sul server reale: solo su richiesta esplicita.
+CI: `.gitlab-ci.yml` nella root (test backend + frontend, job `deploy` manuale da `main`); `.github/workflows/deploy.yml` (stessi test + deploy automatico a ogni push su `main`). Produzione: VPS Ubuntu senza Docker (Apache2 + PHP-FPM + MySQL locali, homequest.deplot.xyz), modelli in `deploy/apache/`; alternativa Docker in `deploy/docker/`, guide `docs/08-deploy.md` e `docs/09-apache-e-cicd.md`. Il deploy pubblica sul server reale: solo su richiesta esplicita.

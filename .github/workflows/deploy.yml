@@ -29,7 +29,7 @@ jobs:
   backend:
     runs-on: ubuntu-latest
     container:
-      image: yiisoftware/yii2-php:8.3-apache
+      image: yiisoftware/yii2-php:8.5-apache
     services:
       hq_mysql: # same host name as docker-compose (config/test_db.php)
         image: mysql:8.0
@@ -117,7 +117,7 @@ jobs:
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.5'
           tools: composer
           coverage: none
       - name: Backend production dependencies

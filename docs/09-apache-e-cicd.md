@@ -22,7 +22,7 @@ File nel repository:
 | `deploy/apache/homequest.conf` | vhost definitivo (redirect 80→443, HTTPS, `/api`, `/uploads`, app) |
 | `deploy/apache/php-fpm-homequest.conf` | pool PHP-FPM (`08-deploy.md` §1) |
 
-Verificati su Ubuntu 24.04 (Apache 2.4 + PHP 8.3-FPM):
+Verificati su Ubuntu 24.04 (Apache 2.4 + PHP 8.5-FPM):
 - `apache2ctl configtest`;
 - l'API risponde con l'envelope, `Authorization: Bearer` arriva a PHP;
 - fallback SPA, `_app` mancanti → 404;
@@ -42,7 +42,7 @@ sudo mkdir -p /var/www/certbot
 Con PHP-FPM Apache usa `mpm_event`, necessario per HTTP/2. Se `apache2ctl -M | grep mpm` mostra `mpm_prefork` (succede se è installato `libapache2-mod-php`):
 
 ```bash
-sudo a2dismod php8.3 mpm_prefork && sudo a2enmod mpm_event
+sudo a2dismod php8.5 mpm_prefork && sudo a2enmod mpm_event
 ```
 
 ## 2. Vhost iniziale (solo HTTP)
@@ -115,7 +115,7 @@ Poi apri `https://homequest.deplot.xyz` nel browser: compare la pagina di access
 Due job della pipeline GitLab, solo sul branch `main`, stage `deploy` in `.gitlab-ci.yml`:
 
 1. **`build-web`** (manuale, `node:22-alpine`): esegue `npm ci && npm run build` in `frontend/` e salva l'artifact `frontend/build/`.
-2. **`deploy`** (parte da solo dopo `build-web`, immagine `yiisoftware/yii2-php:8.3-apache`):
+2. **`deploy`** (parte da solo dopo `build-web`, immagine `yiisoftware/yii2-php:8.5-apache`):
    - esegue `composer install --no-dev --optimize-autoloader` in `backend/`;
    - fa `rsync --delete` di `backend/` verso `/var/www-homequest/backend/`, con le esclusioni elencate sotto;
    - fa `rsync --delete` di `frontend/build/` verso `/var/www-homequest/public/`.
@@ -137,6 +137,24 @@ PHP rilegge i file modificati da solo (OPcache controlla le date ogni 2 s), quin
 | `DEPLOY_USER` | `deploy` |
 | `DEPLOY_PATH` | *(facoltativa)* cartella del progetto, default `/var/www-homequest` |
 
+### GitHub Actions: deploy automatico al push su `main`
+
+Il repository è anche su GitHub: `.github/workflows/deploy.yml` fa lo stesso deploy, ma **automatico a ogni push su `main`** (o a mano da Actions → deploy → *Run workflow*).
+
+1. **`backend`** e **`frontend`**: gli stessi test della pipeline GitLab (stesse immagini, MySQL di servizio `hq_mysql`).
+2. **`deploy`** parte solo se entrambi passano: build dell'app, `composer install --no-dev`, poi i due `rsync` con le stesse esclusioni del job GitLab. Due deploy non girano mai in parallelo (`concurrency`).
+
+Configurazione (Settings → Secrets and variables → Actions; conviene metterli nell'environment `production`, che si può proteggere con approvazione obbligatoria):
+
+| Nome | Tipo | Valore |
+|---|---|---|
+| `SSH_PRIVATE_KEY` | secret | chiave privata di una coppia creata apposta (`ssh-keygen -t ed25519 -C github-deploy`); la pubblica in `/home/deploy/.ssh/authorized_keys` |
+| `DEPLOY_HOST` | variable (o secret) | `homequest.deplot.xyz` |
+| `DEPLOY_USER` | variable (o secret) | `deploy` |
+| `DEPLOY_PATH` | variable | *(facoltativa)* default `/var/www-homequest` |
+
+Come per GitLab: niente migration automatiche. Se un commit ne contiene, lanciale sul server subito dopo il deploy (`08-deploy.md` §3). Usare **una sola** delle due CI per il deploy, per non pubblicare due volte.
+
 ### Cartelle sul server
 
 | Percorso | Copiato dalla CI? | Contenuto / note |
@@ -157,19 +175,21 @@ Le esclusioni proteggono questi percorsi anche da `--delete`. **Qualunque altro 
 | Database | MySQL locale, `/var/lib/mysql` |
 | Backup | `/var/backups/homequest` (14 giorni) |
 | vhost Apache | `/etc/apache2/sites-available/homequest.conf`, copiato a mano da `deploy/apache/` |
-| Pool PHP-FPM | `/etc/php/8.3/fpm/pool.d/homequest.conf` |
+| Pool PHP-FPM | `/etc/php/8.5/fpm/pool.d/homequest.conf` |
 | Certificati | `/etc/letsencrypt/live/homequest.deplot.xyz/` |
 | Log | `08-deploy.md` §5 |
 
 ### Tornare a una versione precedente
 
-Rilancia `build-web` → `deploy` dalla pipeline del commit precedente (CI/CD → Pipelines), oppure fai la copia manuale del §3 da quel commit. Le migration non vengono annullate in automatico: se la versione precedente non è compatibile con lo schema, ripristina anche il dump del giorno (`08-deploy.md` §4).
+Rilancia `build-web` → `deploy` dalla pipeline del commit precedente (CI/CD → Pipelines); su GitHub fai *Re-run* del workflow `deploy` di quel commit (Actions), oppure fai la copia manuale del §3 da quel commit. Le migration non vengono annullate in automatico: se la versione precedente non è compatibile con lo schema, ripristina anche il dump del giorno (`08-deploy.md` §4).
 
 ## 6. Problemi frequenti
 
 | Sintomo | Causa probabile | Verifica / rimedio |
 |---|---|---|
-| **503 Service Unavailable** su `/api` | PHP-FPM fermo o socket assente | `systemctl status php8.3-fpm`, `ls /run/php/homequest-fpm.sock`, `homequest.error.log` |
+| **503 Service Unavailable** su `/api` | PHP-FPM fermo o socket assente | `systemctl status php8.5-fpm`, `ls /run/php/homequest-fpm.sock`, `homequest.error.log` |
+| `Primary script unknown` nell'error log | dopo un cambio di versione PHP il pool `homequest` è rimasto nella cartella della vecchia | `ls /etc/php/*/fpm/pool.d/`, `systemctl status php8.*-fpm` (`08-deploy.md` §7, cambio di versione PHP) |
+| `/icons/...` → 404 | `Alias /icons/` globale di Apache (`mods-enabled/alias.conf`) | le icone dell'app stanno in `/app-icons/` |
 | **403** sulla home | `public/` vuota o non leggibile | primo deploy fatto? `ls /var/www-homequest/public/index.html` |
 | **401 con token valido** | header `Authorization` non passato a PHP | `CGIPassAuth On` nel blocco `<Files index.php>` del vhost |
 | **500** su `/api` | errore applicativo o permessi | `backend/runtime/logs/app.log`, `php-error.log`; `runtime/` e `web/uploads/` scrivibili da `deploy` |

@@ -1,7 +1,7 @@
 services:
   hq_httpd:
     container_name: hq_httpd
-    image: yiisoftware/yii2-php:8.3-apache
+    image: yiisoftware/yii2-php:8.5-apache
     ports:
       - "8080:80"
     volumes:

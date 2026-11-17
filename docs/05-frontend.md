@@ -101,7 +101,7 @@ src/lib/
 
 ## PWA
 - Niente `@vite-pwa/sveltekit`: service worker nativo di SvelteKit 3 in `src/service-worker/index.ts` (con il suo `tsconfig.json` che estende `$app/tsconfig/service-worker`, controllato da `npm run check` con `tsc`). Moduli: `$app/manifest`, `$app/env`, `$app/service-worker`. Precache app shell, fallback a `index.html` per le navigazioni offline, rete-prima con copia in cache per `/api/v1/shopping-lists/*`, solo rete per il resto delle API e `/uploads`.
-- Manifest `static/manifest.webmanifest`, icone in `static/icons/` (any + maskable, 192/512).
+- Manifest `static/manifest.webmanifest`, icone in `static/app-icons/` (non `icons/`: su Debian/Ubuntu `/icons/` è un Alias globale di Apache) (any + maskable, 192/512).
 - Payload push `{type, params, url}` tradotto nel service worker con `t('notifications.<type>.title|body')`; il clic apre `url`. Gli e2e bloccano i service worker (`serviceWorkers: 'block'`), altrimenti le fetch del SW sfuggirebbero ai mock.
 - Push: richiesta permesso solo dopo un'azione esplicita (`PushToggle` in Impostazioni e nella pagina Oggi del figlio), mai all'avvio.
 

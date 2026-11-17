@@ -8,7 +8,7 @@ RUN npm ci --no-audit --no-fund
 COPY frontend/ ./
 RUN npm run build
 
-FROM yiisoftware/yii2-php:8.3-apache
+FROM yiisoftware/yii2-php:8.5-apache
 ENV COMPOSER_ALLOW_SUPERUSER=1 TZ=Europe/Rome
 WORKDIR /app
 COPY backend/composer.json backend/composer.lock ./

@@ -6,7 +6,7 @@ stages:
 
 backend:
   stage: test
-  image: yiisoftware/yii2-php:8.3-apache
+  image: yiisoftware/yii2-php:8.5-apache
   services:
     - name: mysql:8.0
       alias: hq_mysql   # same host name as docker-compose (config/test_db.php)
@@ -76,7 +76,7 @@ build-web:
 
 deploy:
   stage: deploy
-  image: yiisoftware/yii2-php:8.3-apache
+  image: yiisoftware/yii2-php:8.5-apache
   needs: [build-web]
   variables:
     DEPLOY_PATH: /var/www-homequest

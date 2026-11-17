@@ -8,7 +8,7 @@
 | Strumento | Versione | Note |
 |---|---|---|
 | Docker + Docker Compose | 24+ / v2 | `docker-compose.yml` nella root |
-| PHP | 8.3 (nel container `yiisoftware/yii2-php:8.3-apache`) | estensioni già incluse nell'immagine; Xdebug attivo (porta 9009, server PhpStorm `hq.local`) |
+| PHP | 8.5 (nel container `yiisoftware/yii2-php:8.5-apache`) | estensioni già incluse nell'immagine; Xdebug attivo (porta 9009, server PhpStorm `hq.local`) |
 | Composer | 2.x | dentro il container |
 | Node.js | 22 LTS | + npm, sull'host (non containerizzato) |
 | MySQL | 8.0 | container `hq_mysql` |
@@ -51,7 +51,7 @@ Scelte:
 ```
 home_quest/
 ├── CLAUDE.md
-├── docker-compose.yml           # hq_httpd (Apache+PHP 8.3, backend/ → /app) + hq_mysql
+├── docker-compose.yml           # hq_httpd (Apache+PHP 8.5, backend/ → /app) + hq_mysql
 ├── docs/
 ├── backend/                     # app Yii2 basic, docroot web/
 │   ├── config/ web.php console.php db.php test_db.php params.php test.php
@@ -173,7 +173,7 @@ Registrazione/login email+password, verifica email, reset password, JWT access (
 - Export dati famiglia (JSON) e cancellazione definitiva (`DELETE /api/v1/family` con conferma: nome della famiglia digitato) → hard delete immediato a cascata (anche account genitori e foto ricette), `FamilyDataService`. Pagina `settings/privacy` con informativa.
 - Nessun analytics di terze parti; log applicativi senza payload personali (`logVars => []`: niente `$_SERVER`/`$_POST` nei log, quindi né token né dati dei bambini).
 - OWASP: query sempre parametrizzate (ActiveRecord), validazione input sui form, upload immagini con verifica MIME e ri-codifica.
-- Header di sicurezza: ogni risposta API ha `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, `CSP: default-src 'none'; frame-ancestors 'none'`, `Cache-Control: no-store` (`ResponseEnvelope`); `/uploads/` servito con `nosniff` + CSP `sandbox` (`backend/web/.htaccess`). Frontend: CSP in `<meta>` generata da SvelteKit (`kit.csp`, mode `hash`) e `frontend/static/.htaccess` (fallback SPA, HSTS su HTTPS, cache immutabile per `/_app/immutable/`).
+- Header di sicurezza: ogni risposta API ha `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, `CSP: default-src 'none'; frame-ancestors 'none'`, `Cache-Control: no-store` (`ResponseEnvelope`); `/uploads/` servito con `nosniff` + CSP `sandbox` (`backend/web/.htaccess`). Frontend: CSP in `<meta>` generata da SvelteKit (`kit.csp`, mode `hash`); fallback SPA, HSTS e cache immutabile per `/_app/immutable/` nel vhost Apache (`deploy/apache/homequest.conf`) o in `deploy/docker/apache.htaccess`.
 - CORS: solo le origini in `params['corsOrigins']` (in dev i server Vite 5173/4173); in produzione app e API stanno sulla stessa origine.
 - Rate limit: pairing (10/10 min per IP), PIN (5 errori/10 min per figlio+dispositivo), token non validi (20/10 min per IP → 429).
 - Permessi: `SecurityCest` verifica ogni endpoint da genitore contro token figlio (403) e anonimo (401), e gli endpoint da figlio contro il genitore (403).
@@ -185,7 +185,7 @@ Dev: `docker compose up -d` dalla root.
 
 | Servizio | Container | Host | Note |
 |---|---|---|---|
-| API (Apache + PHP 8.3) | `hq_httpd` | `http://localhost:8080` | `backend/` montato in `/app`, DocumentRoot `/app/web` |
+| API (Apache + PHP 8.5) | `hq_httpd` | `http://localhost:8080` | `backend/` montato in `/app`, DocumentRoot `/app/web` |
 | MySQL 8.0 | `hq_mysql` | `localhost:3306` | root / `database`, DB `homequest` (+ `homequest_test` per i test), `TZ=Europe/Rome`, nessun volume montato: `docker compose down` (o la ricreazione del container) azzera il DB → rilanciare `migrate` (e `seed/demo`) |
 | Frontend | — (host) | `http://localhost:5173` | `npm run dev`, proxy `/api` → `:8080` |
 
@@ -198,7 +198,7 @@ Email: `yiisoft/yii2-symfonymailer`; senza `params['mailerDsn']` i messaggi fini
 Fuso orario: unico, **Europe/Rome** (`timeZone` in `config/web.php`, `date_default_timezone_set`, `TZ` di MySQL). Non esiste un fuso per famiglia.
 
 ## 9. CI e deploy (MVP)
-- CI: `.gitlab-ci.yml` nella root, stage `test`: `backend` (immagine `yiisoftware/yii2-php:8.3-apache` + servizio `mysql:8.0` con alias `hq_mysql`: migrate su `homequest_test`, codecept, phpstan) e `frontend` (immagine `mcr.microsoft.com/playwright:v<versione di @playwright/test>-noble`: lint, check, vitest, e2e). Aggiornando Playwright va aggiornato anche il tag dell'immagine.
+- CI: `.gitlab-ci.yml` nella root, stage `test`: `backend` (immagine `yiisoftware/yii2-php:8.5-apache` + servizio `mysql:8.0` con alias `hq_mysql`: migrate su `homequest_test`, codecept, phpstan) e `frontend` (immagine `mcr.microsoft.com/playwright:v<versione di @playwright/test>-noble`: lint, check, vitest, e2e). Aggiornando Playwright va aggiornato anche il tag dell'immagine. Su GitHub `.github/workflows/deploy.yml` esegue gli stessi test e, se passano, il deploy automatico al push su `main` (`09-apache-e-cicd.md` §5).
 - Deploy: stage `deploy`, job **manuale** `build-web` da `main` (build del frontend) → `deploy` (composer `--no-dev`, rsync di `backend/` e della build in `/var/www-homequest/public` sulla VPS Ubuntu, variabile `DEPLOY_PATH`). La CI copia solo file: migration a mano. Server, cron, backup in **`docs/08-deploy.md`**, Apache e cartelle in **`docs/09-apache-e-cicd.md`**.
 - Produzione **senza Docker**, su un'unica origine `https://homequest.deplot.xyz`: Apache2 sull'host serve l'app da `public/`, `/api/*` a `backend/web/index.php` via PHP-FPM, `/uploads/*` statici; MySQL locale.
 - Alternativa **Docker** in `deploy/docker/` (Caddy HTTPS + Apache/PHP in container con l'app sulla stessa origine, MySQL e backup in container; configurazione da `deploy/docker/.env` come variabili d'ambiente): deploy a mano, vedi `docs/08-deploy.md` §6.

@@ -4,7 +4,8 @@ import { self as sw } from '$app/service-worker';
 import { t } from '#lib/i18n/index.ts';
 
 const CACHE = `hq-${version}`;
-const ASSETS = [...immutable, ...assets].map((f) => f.path);
+// dotfiles are never served (Apache denies them): one failed request would abort the install
+const ASSETS = [...immutable, ...assets].map((f) => f.path).filter((p) => !/\/\./.test(p));
 
 sw.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)));
@@ -69,8 +70,8 @@ sw.addEventListener('push', (event) => {
   event.waitUntil(
     sw.registration.showNotification(t(`notifications.${payload.type}.title`, payload.params), {
       body: t(`notifications.${payload.type}.body`, payload.params),
-      icon: '/icons/icon-any-192.png',
-      badge: '/icons/icon-maskable-192.png',
+      icon: '/app-icons/icon-any-192.png',
+      badge: '/app-icons/icon-maskable-192.png',
       tag: payload.type,
       data: { url: payload.url }
     })
