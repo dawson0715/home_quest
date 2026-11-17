@@ -188,7 +188,7 @@ Rilancia `build-web` → `deploy` dalla pipeline del commit precedente (CI/CD �
 | Sintomo | Causa probabile | Verifica / rimedio |
 |---|---|---|
 | **503 Service Unavailable** su `/api` | PHP-FPM fermo o socket assente | `systemctl status php8.5-fpm`, `ls /run/php/homequest-fpm.sock`, `homequest.error.log` |
-| `Primary script unknown` nell'error log | dopo un cambio di versione PHP il pool `homequest` è rimasto nella cartella della vecchia | `ls /etc/php/*/fpm/pool.d/`, `systemctl status php8.*-fpm` (`08-deploy.md` §7, cambio di versione PHP) |
+| `Primary script unknown` nell'error log | sul socket risponde un servizio PHP-FPM diverso da `php8.5-fpm` col pool `homequest` | `ls /etc/php/8.5/fpm/pool.d/homequest.conf`, `systemctl status 'php*-fpm'` (deve girare solo `php8.5-fpm`) |
 | `/icons/...` → 404 | `Alias /icons/` globale di Apache (`mods-enabled/alias.conf`) | le icone dell'app stanno in `/app-icons/` |
 | **403** sulla home | `public/` vuota o non leggibile | primo deploy fatto? `ls /var/www-homequest/public/index.html` |
 | **401 con token valido** | header `Authorization` non passato a PHP | `CGIPassAuth On` nel blocco `<Files index.php>` del vhost |

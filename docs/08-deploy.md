@@ -34,7 +34,7 @@ Configurazione: `backend/.env` (modello `backend/.env.example`, mai committato),
 
 ## 1. Preparare il server (una volta)
 
-Serve **Ubuntu 24.04** con **PHP 8.5** dal PPA `ondrej/php` (i repository ufficiali di 24.04 hanno solo la 8.3): `vendor/` è costruito dalla CI con PHP 8.5. Controllo: `lsb_release -ds`. Su 22.04 (PHP 8.1) aggiorna prima il sistema (§7).
+Serve **Ubuntu 24.04** con **PHP 8.5** dal PPA `ondrej/php` (non è nei repository ufficiali): `vendor/` è costruito dalla CI con PHP 8.5. Controllo: `lsb_release -ds`. Su 22.04 (PHP 8.1) aggiorna prima il sistema (§7).
 
 ```bash
 # DNS: record A (e AAAA se c'è IPv6) di homequest.deplot.xyz → IP della VPS
@@ -190,7 +190,7 @@ Log: `docker compose -f docker-compose.prod.yml logs -f app cron caddy`.
 
 ## 7. Aggiornare il server da Ubuntu 22.04 a 24.04
 
-Sintomo tipico su 22.04: `Your Composer dependencies require a PHP version ">= 8.3.0". You are running 8.1.x` (in risposta all'API o lanciando `php yii`). Ubuntu 22.04 ha solo PHP 8.1, e il controllo di piattaforma di Composer (`vendor/composer/platform_check.php`) blocca l'avvio. Non abbassare il requisito in `composer.json`: aggiorna il sistema.
+Sintomo tipico su 22.04: `Your Composer dependencies require a PHP version ">= …". You are running 8.1.x` (in risposta all'API o lanciando `php yii`). Ubuntu 22.04 ha solo PHP 8.1, e il controllo di piattaforma di Composer (`vendor/composer/platform_check.php`) blocca l'avvio. Non abbassare il requisito in `composer.json`: aggiorna il sistema.
 
 ### Prima
 
@@ -235,17 +235,4 @@ sudo do-release-upgrade
 
 Non serve rifare il deploy: il `vendor/` già sul server, costruito con PHP 8.5, ora parte.
 
-### Cambio di versione PHP (es. 8.3 → 8.5)
-
-Il pool sta nella cartella della singola versione (`/etc/php/<ver>/fpm/pool.d/`): dopo l'upgrade va copiato nella nuova, altrimenti sul socket resta il vecchio servizio e l'API risponde `Primary script unknown` o 503.
-
-```bash
-sudo apt-get install -y php8.5-fpm php8.5-cli php8.5-mysql php8.5-mbstring php8.5-gd php8.5-curl php8.5-xml php8.5-intl
-sudo cp /etc/php/8.3/fpm/pool.d/homequest.conf /etc/php/8.5/fpm/pool.d/
-sudo systemctl disable --now php8.3-fpm
-sudo php-fpm8.5 -t && sudo systemctl enable --now php8.5-fpm && sudo systemctl restart php8.5-fpm
-sudo update-alternatives --set php /usr/bin/php8.5    # cron e `php yii`
-php -v && curl -s https://homequest.deplot.xyz/api/v1/health
-```
-
-Poi un nuovo deploy (la CI ricostruisce `vendor/` con la versione nuova).
+Il pool vale solo per la versione nella cui cartella si trova (`/etc/php/8.5/fpm/pool.d/`) e `php` da riga di comando (cron, `php yii`) deve essere la 8.5: `php -v`, altrimenti `sudo update-alternatives --set php /usr/bin/php8.5`.
