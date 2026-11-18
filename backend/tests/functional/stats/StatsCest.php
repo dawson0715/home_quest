@@ -6,6 +6,7 @@ namespace tests\functional\stats;
 
 use app\models\ChildProfile;
 use app\models\FamilyMember;
+use app\models\PointTransaction;
 use app\models\TaskOccurrence;
 use app\services\PointsService;
 use app\services\WeeklySummaryService;
@@ -32,6 +33,11 @@ final class StatsCest
         $points = new PointsService();
         $points->award($this->luca, 30, 30, 'task');
         $points->award($this->luca, -10, 0, 'reward');
+        // TimestampBehavior uses the real time: move the transactions inside the frozen week
+        PointTransaction::updateAll(
+            ['created_at' => Yii::$app->get('clock')->now()->getTimestamp()],
+            ['child_id' => $this->luca->id],
+        );
     }
 
     public function _after(): void
