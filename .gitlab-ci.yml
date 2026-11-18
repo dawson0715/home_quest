@@ -26,8 +26,8 @@ backend:
     - for i in $(seq 1 30); do php -r 'new PDO("mysql:host=hq_mysql", "root", "database");' >/dev/null 2>&1 && break; sleep 2; done
   script:
     - php tests/bin/yii migrate --interactive=0
-    - vendor/bin/codecept build
-    - vendor/bin/codecept run
+    - php -d register_argc_argv=On vendor/bin/codecept build
+    - php -d register_argc_argv=On vendor/bin/codecept run
     - vendor/bin/phpstan analyse --no-progress --memory-limit=1G
   rules:
     - changes: [backend/**/*, .gitlab-ci.yml]

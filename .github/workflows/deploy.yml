@@ -53,8 +53,8 @@ jobs:
       - name: Wait for MySQL
         run: for i in $(seq 1 30); do php -r 'new PDO("mysql:host=hq_mysql", "root", "database");' >/dev/null 2>&1 && break; sleep 2; done
       - run: php tests/bin/yii migrate --interactive=0
-      - run: vendor/bin/codecept build
-      - run: vendor/bin/codecept run
+      - run: php -d register_argc_argv=On vendor/bin/codecept build
+      - run: php -d register_argc_argv=On vendor/bin/codecept run
       - run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
 
   frontend:

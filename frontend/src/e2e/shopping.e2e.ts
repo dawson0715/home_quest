@@ -23,7 +23,10 @@ test('parent adds items, works offline, generates from the menu', async ({ page 
   await expect(page.getByRole('button', { name: 'Togli la spunta a Latte' })).toBeVisible();
   expect(api.shop.items.find((i) => i.label === 'Latte')?.checked).toBe(false);
 
+  // back online: the browser fires `online` (the mock only aborts requests, so dispatch it);
+  // without it the test would race the 5 s polling interval against expect.poll's 5 s timeout
   api.net.offline = false;
+  await page.evaluate(() => window.dispatchEvent(new Event('online')));
   await expect
     .poll(() => api.shop.items.map((i) => [i.label, i.checked]))
     .toEqual([
