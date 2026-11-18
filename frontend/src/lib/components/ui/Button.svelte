@@ -4,7 +4,7 @@
   import { t } from '#lib/i18n/index.ts';
 
   type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
-  type Size = 'md' | 'lg' | 'xl';
+  type Size = 'sm' | 'md' | 'lg' | 'xl';
 
   interface Props extends HTMLButtonAttributes {
     variant?: Variant;
@@ -27,12 +27,13 @@
 
   const variants: Record<Variant, string> = {
     primary: 'bg-brand text-brand-contrast hover:brightness-95',
-    secondary: 'bg-surface-muted text-ink hover:brightness-95',
+    secondary: 'border border-line bg-surface text-ink hover:bg-surface-muted',
     ghost: 'bg-transparent text-ink hover:bg-surface-muted',
     danger: 'bg-danger text-white hover:brightness-95'
   };
 
   const sizes: Record<Size, string> = {
+    sm: 'min-h-11 px-3 text-sm',
     md: 'min-h-11 px-4 text-base',
     lg: 'min-h-12 px-5 text-lg',
     xl: 'min-h-16 px-6 text-xl'

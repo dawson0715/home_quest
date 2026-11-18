@@ -220,34 +220,41 @@
 <div class="flex flex-col gap-4">
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h1 class="text-2xl font-semibold">{t('menu.title')}</h1>
-    <div class="flex items-center gap-1">
+    <div class="flex w-full items-center justify-between gap-1 sm:w-auto">
       <a
-        class="grid size-11 place-items-center rounded-full hover:bg-surface"
+        class="grid size-11 shrink-0 place-items-center rounded-full hover:bg-surface"
         aria-label={t('menu.prev_week')}
         href={resolve('/(parent)/menu/[[week]]', { week: addDays(week, -7) })}>←</a
       >
-      <span class="font-medium">{t('menu.week_of', { date: formatDay(week) })}</span>
+      <span class="text-center font-medium">{t('menu.week_of', { date: formatDay(week) })}</span>
       <a
-        class="grid size-11 place-items-center rounded-full hover:bg-surface"
+        class="grid size-11 shrink-0 place-items-center rounded-full hover:bg-surface"
         aria-label={t('menu.next_week')}
         href={resolve('/(parent)/menu/[[week]]', { week: addDays(week, 7) })}>→</a
       >
     </div>
   </div>
-  <div class="flex flex-wrap gap-2">
-    <Button onclick={() => (suggestOpen = true)}>{t('menu.suggest.button')}</Button>
-    <Button variant="secondary" onclick={copyLastWeek}>{t('menu.copy_last_week')}</Button>
-    <Button variant="secondary" onclick={openTemplates}>{t('menu.use_template')}</Button>
-    <Button variant="ghost" onclick={() => (saveTemplateOpen = true)}
+  <!-- Mobile: 2-column grid (main actions first); wider screens: one wrapping row. -->
+  <div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+    <Button size="sm" onclick={() => (suggestOpen = true)}>{t('menu.suggest.button')}</Button>
+    <Button size="sm" onclick={generateShopping}>🛒 {t('shopping.generate_from_planner')}</Button>
+    <Button variant="secondary" size="sm" class="col-span-2" onclick={copyLastWeek}
+      >{t('menu.copy_last_week')}</Button
+    >
+    <Button variant="secondary" size="sm" onclick={openTemplates}>{t('menu.use_template')}</Button>
+    <Button variant="secondary" size="sm" onclick={() => (saveTemplateOpen = true)}
       >{t('menu.save_template')}</Button
     >
-    <Button onclick={generateShopping}>🛒 {t('shopping.generate_from_planner')}</Button>
   </div>
 
   {#if plan}
     <!-- Mobile: one day at a time -->
     <div class="flex flex-col gap-3 md:hidden">
-      <div class="flex gap-1 overflow-x-auto" role="tablist" aria-label={t('menu.day_tabs')}>
+      <div
+        class="-mx-4 flex [scrollbar-width:none] gap-1 overflow-x-auto px-4 pb-1 [&::-webkit-scrollbar]:hidden"
+        role="tablist"
+        aria-label={t('menu.day_tabs')}
+      >
         {#each days as date, i (date)}
           <button
             type="button"
