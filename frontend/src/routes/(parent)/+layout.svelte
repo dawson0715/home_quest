@@ -34,6 +34,7 @@
       { href: resolve('/(parent)/rewards'), label: t('nav.rewards'), icon: '🎁' },
       { href: resolve('/(parent)/children'), label: t('nav.children'), icon: '👧' },
       { href: resolve('/(parent)/stats'), label: t('nav.stats'), icon: '📊' },
+      { href: resolve('/(parent)/profile'), label: t('nav.profile'), icon: '👤' },
       { href: resolve('/(parent)/settings/family'), label: t('nav.settings'), icon: '⚙️' }
     ]
   ];

@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace app\modules\v1\controllers;
 
+use app\components\ApiException;
+use app\components\ErrorCode;
 use app\components\FamilyContext;
 use app\controllers\ApiController;
+use app\forms\ProfileUpdateForm;
 use app\models\ChildProfile;
 use app\models\ChildSession;
 use app\models\Device;
@@ -45,6 +48,26 @@ class MeController extends ApiController
 
         /** @var User $actor */
         return $this->parentMe($actor);
+    }
+
+    /**
+     * PATCH /me (parent) {name?, email?, avatar?, color?}: own personal data and game profile.
+     *
+     * @return array<string, mixed>|ProfileUpdateForm
+     */
+    public function actionUpdate(): array|ProfileUpdateForm
+    {
+        /** @var FamilyContext $context */
+        $context = Yii::$app->get('familyContext');
+        $actor = $context->getActor();
+        if (!$actor instanceof User) {
+            throw new ApiException(ErrorCode::FORBIDDEN, 'Only parents can edit their profile.', 403);
+        }
+        $member = FamilyMember::find()->where(['user_id' => $actor->id])->one();
+        $form = new ProfileUpdateForm($actor, $member === null ? null : self::ownPlayer($actor, $member->family_id));
+        $form->load((array) Yii::$app->request->getBodyParams(), '');
+
+        return $form->save() ? $this->parentMe($actor) : $form;
     }
 
     /**
@@ -108,12 +131,17 @@ class MeController extends ApiController
     private function parentMe(User $actor): array
     {
         $member = FamilyMember::find()->with('family')->where(['user_id' => $actor->id])->one();
-        $player = $member === null ? null : ChildProfile::find()->forFamily($member->family_id)->andWhere(['user_id' => $actor->id])->one();
+        $player = $member === null ? null : self::ownPlayer($actor, $member->family_id);
         return [
             'user' => $actor,
             'family' => $member?->family,
             'role' => $member?->role,
             'player' => $player,
         ];
+    }
+
+    private static function ownPlayer(User $actor, int $familyId): ?ChildProfile
+    {
+        return ChildProfile::find()->forFamily($familyId)->andWhere(['user_id' => $actor->id])->one();
     }
 }

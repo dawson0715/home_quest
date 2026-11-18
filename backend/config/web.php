@@ -84,6 +84,7 @@ $config = [
             'rules' => [
                 'GET api/v1/health' => 'v1/health/index',
                 'GET api/v1/me' => 'v1/me/index',
+                'PATCH api/v1/me' => 'v1/me/update',
                 'GET api/v1/family' => 'v1/family/view',
                 'PATCH api/v1/family' => 'v1/family/update',
                 'GET api/v1/family/members' => 'v1/family/members',

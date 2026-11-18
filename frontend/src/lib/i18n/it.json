@@ -82,6 +82,7 @@
     "stats": "Statistiche",
     "settings": "Impostazioni",
     "my_game": "Il mio gioco",
+    "profile": "Il mio profilo",
     "open_menu": "Apri menu",
     "close_menu": "Chiudi menu",
     "drawer": "Menu",
@@ -100,6 +101,12 @@
     },
     "rewards": {
       "some": "{count} premi richiesti"
+    },
+    "recent": {
+      "title": "Ultimi completati",
+      "empty": "Ancora nessun compito completato",
+      "waiting": "da approvare",
+      "all": "Vai alle approvazioni"
     }
   },
   "avatar": {
@@ -690,6 +697,15 @@
     "unavailable": "Le notifiche non sono configurate sul server",
     "denied": "Hai bloccato le notifiche: riattivale dalle impostazioni del browser",
     "kid_enable": "Ricordami i compiti"
+  },
+  "profile": {
+    "title": "Il mio profilo",
+    "name": "Nome",
+    "name_hint": "Come ti vedono gli altri in famiglia e nel gioco.",
+    "email": "Email (facoltativa)",
+    "email_hint": "Serve solo per il riepilogo settimanale.",
+    "username": "Nome utente: {username}",
+    "saved": "Profilo salvato"
   },
   "settings": {
     "title": "Impostazioni",

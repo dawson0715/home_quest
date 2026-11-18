@@ -53,6 +53,16 @@ export interface User {
   id: number;
   username: string;
   name: string | null;
+  /** only in the user's own /me */
+  email: string | null;
+}
+
+/** PATCH /me (parent): name goes to the user and the game profile. */
+export interface ProfileUpdate {
+  name?: string;
+  email?: string | null;
+  avatar?: Avatar;
+  color?: string;
 }
 
 export interface ParentMe {

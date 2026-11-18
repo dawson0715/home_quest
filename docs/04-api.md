@@ -44,7 +44,8 @@ Nessun endpoint di registrazione/login: utenti e token si creano da console (`ph
 
 | Metodo | Path | Ruolo | Note |
 |---|---|---|---|
-| GET | /me | P/C | `{user: {id, username, name}, family: Family\|null, role: "admin"\|"coparent"\|null, player: Child\|null}` (`player` = profilo di gioco del genitore). `family`/`role` null se l'utente non è in nessuna famiglia. Usato dal frontend per validare il token inserito. |
+| GET | /me | P/C | `{user: {id, username, name, email}, family: Family\|null, role: "admin"\|"coparent"\|null, player: Child\|null}` (`player` = profilo di gioco del genitore). `family`/`role` null se l'utente non è in nessuna famiglia. Usato dal frontend per validare il token inserito. |
+| PATCH | /me | P | `{name?, email?\|null, avatar?, color?}` → come `GET /me`. Aggiornamento parziale dei dati del genitore: `name` (max 40) va sia in `user.name` sia nel suo profilo di gioco, `avatar`/`color` nel profilo di gioco, `email` (unica, `""`/null la rimuove) serve al riepilogo settimanale. Con device/child token → 403 `forbidden`. |
 
 ## Famiglia, membri, dispositivi
 | Metodo | Path | Ruolo |
@@ -79,7 +80,7 @@ Nessun endpoint di registrazione/login: utenti e token si creano da console (`ph
 | GET/PATCH | /tasks/{id} | P | PATCH parziale; `assignee_ids` e `checklist` se presenti sostituiscono (voci con `id` = aggiornate, senza = nuove, mancanti = eliminate) |
 | DELETE | /tasks/{id} | P | 204: eliminato se senza storico, altrimenti `is_active=false` |
 | GET | /task-templates | P | `?age=7` → `[{id, title_key, icon, min_age, max_age, default_points, category, time_of_day, recurrence_type}]` |
-| GET | /occurrences | P | `?date=2026-11-16&child_id=&status=submitted[,rejected]` → `Occurrence[]` con `child` (`{id,name,avatar,color,has_pin}`); senza `date` = oggi, salvo se c'è `status` (tutte le date). Max 500 |
+| GET | /occurrences | P | `?date=2026-11-16&child_id=&status=submitted[,rejected]` → `Occurrence[]` con `child` (`{id,name,avatar,color,has_pin}`); senza `date` = oggi, salvo se c'è `status` (tutte le date). `limit` (1–500, default 500); `sort=recent` ordina per `submitted_at` decrescente (home "Ultimi completati"), altrimenti `due_date` desc + `submitted_at` asc |
 | GET | /me/today | C/P | istanze di oggi del giocatore (figlio, o il genitore col suo profilo di gioco), raggruppate per `time_of_day`; i compiti singoli restano finché aperti; le istanze `taken` non compaiono |
 | PATCH | /occurrences/{id}/checklist | C/P (solo proprie) | `{item_id, done}` → `Occurrence` |
 | POST | /occurrences/{id}/submit | C/P (solo proprie, di oggi) | compito libero già completato da un altro → 409 `task_taken` (o 422 `invalid_transition` se la tua istanza è già `taken`); checklist incompleta → 422 `checklist_incomplete`; risposta `{occurrence, points_awarded, level_up, balance, new_badges}`: `approved` subito se il compito non richiede approvazione |

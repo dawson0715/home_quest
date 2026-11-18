@@ -1,8 +1,13 @@
 import { api, request } from '../client';
-import type { Family, FamilyMember, FamilyUpdate, Me } from '../types';
+import type { Family, FamilyMember, FamilyUpdate, Me, ParentMe, ProfileUpdate } from '../types';
 
 export async function getMe(): Promise<Me> {
   return (await api.get<Me>('me')).data;
+}
+
+/** Parent's own personal data and game profile (avatar, color). */
+export async function updateMe(changes: ProfileUpdate): Promise<ParentMe> {
+  return (await api.patch<ParentMe>('me', changes)).data;
 }
 
 export async function getFamily(): Promise<Family> {

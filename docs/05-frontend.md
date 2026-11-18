@@ -30,6 +30,7 @@ src/routes/
     ├── children/ · children/[id]/        # [id]: profilo, PIN, PointsPanel (bonus/penalità + storico punti)
     ├── tasks/ · tasks/new/ (?template=id dalla libreria) · tasks/[id]/   # assegnatari = tutti i giocatori (anche genitori), opzione "Libero"
     ├── my-game/                          # "Il mio gioco": compiti di oggi del genitore, punti, premi
+    ├── profile/                          # "Il mio profilo": nome, email, avatar e colore del genitore (PATCH /me)
     ├── approvals/                        # premi richiesti / da consegnare + compiti in attesa
     ├── rewards/                          # gestione premi (modale RewardForm)
     ├── menu/[[week]]/                    # planner: griglia 7×pasti (desktop) / un giorno per tab (mobile), SlotEditor, copia settimana, modelli, proposte dei figli, 👩‍🍳 compito collegato

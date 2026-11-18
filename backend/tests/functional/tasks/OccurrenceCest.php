@@ -190,4 +190,31 @@ final class OccurrenceCest
         $I->seeResponseContainsJson(['data' => ['approved' => [], 'skipped' => [$id]]]);
         $I->seeRecord(TaskOccurrence::class, ['id' => $id, 'status' => 'submitted']);
     }
+
+    public function recentCompletedAcrossDaysWithLimit(FunctionalTester $I): void
+    {
+        $task = FamilyFactory::task($this->parent->family, [$this->luca, $this->anna]);
+        $rows = [
+            [$this->luca->id, '2026-11-14', 'approved', '2026-11-14 18:00:00'],
+            [$this->anna->id, '2026-11-15', 'approved', '2026-11-15 09:00:00'],
+            [$this->luca->id, '2026-11-16', 'submitted', '2026-11-16 07:30:00'],
+            [$this->anna->id, '2026-11-16', 'pending', null],
+        ];
+        foreach ($rows as [$childId, $date, $status, $submittedAt]) {
+            Yii::$app->db->createCommand()->insert(TaskOccurrence::tableName(), [
+                'family_id' => $this->parent->family_id, 'task_id' => $task->id, 'child_id' => $childId,
+                'due_date' => $date, 'status' => $status, 'submitted_at' => $submittedAt, 'created_at' => 1, 'updated_at' => 1,
+            ])->execute();
+        }
+
+        $I->amAuthenticatedAs($this->parent->user);
+        $I->sendGet('occurrences?status=approved,submitted&sort=recent&limit=2');
+        $I->seeResponseCodeIs(200);
+        $I->assertSame(['2026-11-16', '2026-11-15'], $I->grabDataFromResponseByJsonPath('$.data[*].due_date'));
+        $I->assertSame(['Luca', 'Anna'], $I->grabDataFromResponseByJsonPath('$.data[*].child.name'));
+
+        $I->amFamilyMember(FamilyFactory::family('Bianchi'));
+        $I->sendGet('occurrences?status=approved,submitted&sort=recent');
+        $I->assertSame([], $I->grabDataFromResponseByJsonPath('$.data[*].id'));
+    }
 }

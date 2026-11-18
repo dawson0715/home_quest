@@ -32,8 +32,13 @@ class OccurrenceController extends ApiController
 
         $query = TaskOccurrence::find()->alias('o')->forFamily($context->getId())
             ->with(['task.checklistItems', 'child'])
-            ->orderBy(['o.due_date' => SORT_DESC, 'o.submitted_at' => SORT_ASC, 'o.id' => SORT_ASC])
-            ->limit(500);
+            ->limit(max(1, min(500, (int) $request->get('limit', 500))));
+        if ($request->get('sort') === 'recent') {
+            // most recently completed first (e.g. the "latest completed" list on the home page)
+            $query->orderBy(['o.submitted_at' => SORT_DESC, 'o.id' => SORT_DESC]);
+        } else {
+            $query->orderBy(['o.due_date' => SORT_DESC, 'o.submitted_at' => SORT_ASC, 'o.id' => SORT_ASC]);
+        }
         $date = $request->get('date');
         $status = $request->get('status');
         if ($date !== null || $status === null) {

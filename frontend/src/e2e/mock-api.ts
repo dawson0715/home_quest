@@ -364,6 +364,8 @@ export function createFakeApi() {
     can_check_shopping: false,
     archived: false
   };
+  const user = { id: 2, username: 'anna', name: 'Anna', email: null as string | null };
+  const parentMe = () => ({ user, family, role: 'admin', player: childJson(adult) });
   const occJson = (o: FakeOccurrence) => {
     const task = tasks.find((x) => x.id === o.task_id) as FakeTask;
     const child = (
@@ -467,14 +469,7 @@ export function createFakeApi() {
     }
 
     if (path === 'me' && method === 'GET') {
-      if (isParent) {
-        return ok(route, {
-          user: { id: 2, username: 'anna', name: 'Anna' },
-          family,
-          role: 'admin',
-          player: childJson(adult)
-        });
-      }
+      if (isParent) return ok(route, parentMe());
       if (device)
         return ok(route, { device: { id: device.id, name: device.name }, family, role: 'device' });
       if (childSession) return ok(route, { child: childJson(childSession), family, role: 'child' });
@@ -668,6 +663,13 @@ export function createFakeApi() {
 
     if (!isParent) return fail(route, 401, 'unauthorized');
 
+    if (path === 'me' && method === 'PATCH') {
+      if ('name' in body) user.name = adult.name = body.name;
+      if ('email' in body) user.email = body.email || null;
+      if (body.avatar) adult.avatar = body.avatar;
+      if (body.color) adult.color = body.color;
+      return ok(route, parentMe());
+    }
     if (path === 'family' && method === 'PATCH') {
       if (body.name !== undefined) family.name = body.name;
       if (body.settings) Object.assign(family.settings, body.settings);
@@ -1121,6 +1123,8 @@ export function createFakeApi() {
     net,
     family,
     points,
+    user,
+    adult,
     async install(page: Page) {
       await page.route('**/api/v1/**', handle);
     },

@@ -58,3 +58,20 @@ test('admin downloads the data and deletes the family', async ({ page }) => {
   await expect(page).toHaveURL(/\/login$/);
   expect(api.family.name).toBe('__deleted__');
 });
+
+test('parent edits their profile: name, email and avatar', async ({ page }) => {
+  const api = createFakeApi();
+  await api.install(page);
+  await loginAsParent(page);
+
+  await page.getByRole('link', { name: 'Il mio profilo' }).click();
+  await expect(page.getByLabel('Nome', { exact: true })).toHaveValue('Anna');
+  await page.getByLabel('Nome', { exact: true }).fill('Anna Maria');
+  await page.getByLabel('Email (facoltativa)').fill('anna@example.com');
+  await page.getByRole('img', { name: 'Leone' }).click();
+  await page.getByRole('radio', { name: '#2E5BBA' }).check({ force: true });
+  await page.getByRole('button', { name: 'Salva' }).click();
+  await expect(page.getByText('Profilo salvato')).toBeVisible();
+  expect(api.user).toMatchObject({ name: 'Anna Maria', email: 'anna@example.com' });
+  expect(api.adult).toMatchObject({ name: 'Anna Maria', avatar: 'lion', color: '#2E5BBA' });
+});
