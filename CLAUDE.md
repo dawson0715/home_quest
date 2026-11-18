@@ -51,7 +51,7 @@ docker exec -e XDEBUG_MODE=off -w /app hq_httpd php yii user/set-email <username
 docker exec -e XDEBUG_MODE=off -w /app hq_httpd php yii push/generate-keys             # chiavi VAPID → config/params-local.php (non committare)
 docker exec -e XDEBUG_MODE=off -w /app hq_httpd php yii ai/check                       # prova Gemini (GEMINI_API_KEY in backend/.env, piano a pagamento)
 docker exec -e XDEBUG_MODE=off -w /app hq_httpd php tests/bin/yii migrate --interactive=0  # migration sul DB di test (homequest_test)
-docker exec -e XDEBUG_MODE=off -w /app hq_httpd php -d register_argc_argv=On vendor/bin/codecept run  # test (unit + functional API); Codeception needs register_argc_argv, off in the PHP 8.5 image
+docker exec -e XDEBUG_MODE=off -w /app hq_httpd vendor/bin/codecept run                # test (unit + functional API)
 docker exec -e XDEBUG_MODE=off -w /app hq_httpd vendor/bin/phpstan analyse --memory-limit=1G  # analisi statica (level 6)
 
 # Frontend (sull'host)
