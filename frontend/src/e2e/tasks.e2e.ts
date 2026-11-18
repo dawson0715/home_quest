@@ -212,3 +212,64 @@ test('home lists the latest completed tasks', async ({ page }) => {
     .click();
   await expect(page).toHaveURL(/\/approvals$/);
 });
+
+test('tasks page lists recently completed tasks', async ({ page }) => {
+  const api = createFakeApi();
+  const luca = api.addChild('Luca');
+  api.tasks.push({
+    id: 60,
+    title: 'Apparecchiare',
+    icon: '🍽️',
+    points: 15,
+    requires_approval: true,
+    recurrence_type: 'daily',
+    recurrence_days: null,
+    interval_days: null,
+    time_of_day: 'evening',
+    due_date: null,
+    start_date: '2026-11-16',
+    end_date: null,
+    is_active: true,
+    assignee_ids: [luca.id],
+    checklist: []
+  });
+  api.occurrences.push(
+    {
+      id: 601,
+      task_id: 60,
+      child_id: luca.id,
+      status: 'approved',
+      done: [],
+      review_note: null,
+      points_awarded: 15
+    },
+    {
+      id: 602,
+      task_id: 60,
+      child_id: luca.id,
+      status: 'submitted',
+      done: [],
+      review_note: null,
+      points_awarded: null
+    },
+    {
+      id: 603,
+      task_id: 60,
+      child_id: luca.id,
+      status: 'pending',
+      done: [],
+      review_note: null,
+      points_awarded: null
+    }
+  );
+  await api.install(page);
+  await loginAsParent(page);
+
+  await page.getByRole('link', { name: 'Compiti' }).click();
+  const completed = page.getByRole('region', { name: 'Completati di recente' });
+  await expect(completed.getByRole('listitem')).toHaveCount(2);
+  await expect(completed.getByRole('listitem').filter({ hasText: '15 punti' })).toContainText(
+    'Apparecchiare'
+  );
+  await expect(completed.getByRole('link', { name: 'da approvare' })).toBeVisible();
+});

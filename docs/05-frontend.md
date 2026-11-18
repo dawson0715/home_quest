@@ -28,7 +28,7 @@ src/routes/
 └── (parent)/                             # guard: role admin|coparent
     ├── dashboard/                        # oggi: da approvare, ultimi completati (tutti i giocatori), progressi figli, pasti di oggi
     ├── children/ · children/[id]/        # [id]: profilo, PIN, PointsPanel (bonus/penalità + storico punti)
-    ├── tasks/ · tasks/new/ (?template=id dalla libreria) · tasks/[id]/   # assegnatari = tutti i giocatori (anche genitori), opzione "Libero"
+    ├── tasks/ · tasks/new/ (?template=id dalla libreria) · tasks/[id]/   # assegnatari = tutti i giocatori (anche genitori), opzione "Libero"; in fondo "Completati di recente" (RecentCompletions, come in dashboard)
     ├── my-game/                          # "Il mio gioco": compiti di oggi del genitore, punti, premi
     ├── profile/                          # "Il mio profilo": nome, email, avatar e colore del genitore (PATCH /me)
     ├── approvals/                        # premi richiesti / da consegnare + compiti in attesa

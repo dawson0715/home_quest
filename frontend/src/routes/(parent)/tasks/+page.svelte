@@ -6,6 +6,7 @@
   import { ApiError } from '#lib/api/errors.ts';
   import type { Child, Task, TaskTemplate } from '#lib/api/types.ts';
   import ChildAvatar from '#lib/components/child/ChildAvatar.svelte';
+  import RecentCompletions from '#lib/components/parent/RecentCompletions.svelte';
   import Button from '#lib/components/ui/Button.svelte';
   import Modal from '#lib/components/ui/Modal.svelte';
   import { errorMessage, t } from '#lib/i18n/index.ts';
@@ -111,6 +112,8 @@
       </ul>
     {/if}
   {/if}
+
+  <RecentCompletions title={t('tasks.completed')} limit={30} headingId="tasks-completed-title" />
 </div>
 
 <Modal bind:open={libraryOpen} title={t('tasks.library_title')}>

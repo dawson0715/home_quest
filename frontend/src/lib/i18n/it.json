@@ -282,6 +282,7 @@
     "new_title": "Nuovo compito",
     "edit_title": "Modifica compito",
     "inactive": "Disattivati",
+    "completed": "Completati di recente",
     "points": "{points} punti",
     "requires_approval": "Da approvare",
     "saved": "Compito salvato",
