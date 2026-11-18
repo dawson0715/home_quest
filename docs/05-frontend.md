@@ -26,7 +26,7 @@ src/routes/
 │   ├── kid-menu/                         # menù da oggi a fine settimana: 👍/👎 e proposta di un piatto (non `menu/`: collide)
 │   └── kid-shopping/                     # solo se can_check_shopping (non `shopping/`: collide)
 └── (parent)/                             # guard: role admin|coparent
-    ├── dashboard/                        # oggi: da approvare, progressi figli, pasti di oggi
+    ├── dashboard/                        # oggi: da approvare, ultimi completati (tutti i giocatori), progressi figli, pasti di oggi
     ├── children/ · children/[id]/        # [id]: profilo, PIN, PointsPanel (bonus/penalità + storico punti)
     ├── tasks/ · tasks/new/ (?template=id dalla libreria) · tasks/[id]/   # assegnatari = tutti i giocatori (anche genitori), opzione "Libero"
     ├── my-game/                          # "Il mio gioco": compiti di oggi del genitore, punti, premi

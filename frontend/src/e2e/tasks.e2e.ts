@@ -148,3 +148,67 @@ test('parent approves and rejects submitted tasks', async ({ page }) => {
     review_note: 'Il letto non è fatto'
   });
 });
+
+test('home lists the latest completed tasks', async ({ page }) => {
+  const api = createFakeApi();
+  const luca = api.addChild('Luca');
+  const anna = api.addChild('Anna', { avatar: 'owl' });
+  api.tasks.push({
+    id: 80,
+    title: 'Apparecchiare',
+    icon: '🍽️',
+    points: 15,
+    requires_approval: true,
+    recurrence_type: 'daily',
+    recurrence_days: null,
+    interval_days: null,
+    time_of_day: 'any',
+    due_date: null,
+    start_date: '2026-11-16',
+    end_date: null,
+    is_active: true,
+    checklist: [],
+    assignee_ids: [luca.id, anna.id]
+  });
+  api.occurrences.push(
+    {
+      id: 81,
+      task_id: 80,
+      child_id: luca.id,
+      status: 'approved',
+      done: [],
+      review_note: null,
+      points_awarded: 15
+    },
+    {
+      id: 82,
+      task_id: 80,
+      child_id: anna.id,
+      status: 'submitted',
+      done: [],
+      review_note: null,
+      points_awarded: null
+    },
+    {
+      id: 83,
+      task_id: 80,
+      child_id: anna.id,
+      status: 'pending',
+      done: [],
+      review_note: null,
+      points_awarded: null
+    }
+  );
+  await api.install(page);
+  await loginAsParent(page);
+
+  const section = page.getByRole('region', { name: 'Ultimi completati' });
+  await expect(section.getByRole('listitem')).toHaveCount(2);
+  await expect(section.getByRole('listitem').filter({ hasText: 'Luca' })).toContainText('15 punti');
+  await section
+    .getByRole('listitem')
+    .filter({ hasText: 'Anna' })
+    .getByRole('link', { name: 'da approvare' })
+    .click();
+  await expect(page).toHaveURL(/\/approvals$/);
+});

@@ -1057,8 +1057,15 @@ export function createFakeApi() {
       ]);
     }
     if (path === 'occurrences' && method === 'GET') {
-      const status = url.searchParams.get('status');
-      return ok(route, occurrences.filter((o) => !status || o.status === status).map(occJson));
+      const statuses = url.searchParams.get('status')?.split(',');
+      const limit = Number(url.searchParams.get('limit') ?? 500);
+      return ok(
+        route,
+        occurrences
+          .filter((o) => !statuses || statuses.includes(o.status))
+          .slice(0, limit)
+          .map(occJson)
+      );
     }
     if (path === 'occurrences/bulk-approve' && method === 'POST') {
       const approved: number[] = [];

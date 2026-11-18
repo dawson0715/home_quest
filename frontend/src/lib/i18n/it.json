@@ -104,9 +104,8 @@
     },
     "recent": {
       "title": "Ultimi completati",
-      "empty": "Ancora nessun compito completato",
-      "waiting": "da approvare",
-      "all": "Vai alle approvazioni"
+      "empty": "Ancora niente di completato",
+      "waiting": "da approvare"
     }
   },
   "avatar": {
