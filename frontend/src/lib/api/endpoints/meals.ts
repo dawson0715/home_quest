@@ -4,6 +4,7 @@ import type {
   MealEntry,
   MealPlan,
   MealSlot,
+  MealSuggestions,
   MealTemplate,
   MealType,
   Recipe,
@@ -83,6 +84,11 @@ export async function copyMealPlan(
   source: { source_week_start: string } | { template_id: number }
 ): Promise<MealPlan> {
   return (await api.post<MealPlan>(`meal-plans/${weekStart}/copy-from`, source)).data;
+}
+
+/** Preview of dishes for the empty slots (nothing is saved). */
+export async function suggestMealPlan(weekStart: string, note = ''): Promise<MealSuggestions> {
+  return (await api.post<MealSuggestions>(`meal-plans/${weekStart}/suggest`, { note })).data;
 }
 
 export async function saveMealTemplate(weekStart: string, name: string): Promise<{ id: number }> {

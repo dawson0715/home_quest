@@ -4,6 +4,7 @@ $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
 
 Yii::$container->setSingleton(\app\components\PushSender::class, fn () => \app\components\WebPushSender::fromParams());
+Yii::$container->setSingleton(\app\components\AiClient::class, fn () => \app\components\GeminiClient::fromParams());
 
 $config = [
     'id' => 'basic-console',

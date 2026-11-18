@@ -70,6 +70,12 @@ Ogni milestone termina con: test verdi, demo funzionante con `seed/demo`, doc ag
 - [x] M8.4 Deploy produzione: VPS senza Docker (Apache2 + PHP-FPM + MySQL locali, modelli in `deploy/apache/`, cron, backup giornalieri 14 gg), job CI `build-web` manuale + `deploy` da `main`, guide `docs/08-deploy.md` e `docs/09-apache-e-cicd.md` (Ubuntu, homequest.deplot.xyz); alternativa Docker Compose in `deploy/docker/`. Error tracking esterno non ancora integrato
 - [x] M8.5 Onboarding guidato per nuova famiglia (crea figlio → prima routine → primo premio)
 
+## M9 — Suggerimenti menù
+- [x] M9.1 `MenuSuggestionService`: algoritmo locale a punteggio (preferite, voti, ricette non fatte da tempo, veloci nei feriali, abitudini colazione/merenda, niente ripetizioni finché ci sono alternative) + endpoint `POST /meal-plans/{week}/suggest` (anteprima, nulla salvato)
+- [x] M9.2 `AiClient`/`GeminiClient` (Interactions API, JSON strutturato), dati anonimi, validazione della risposta, limite giornaliero, fallback locale; impostazione `ai_suggestions` (default attiva); comando `php yii ai/check`
+- [x] M9.3 Frontend: bottone e dialogo nel planner, toggle impostazioni, informativa privacy
+- [ ] M9.4 Verifica con la chiave reale (`php yii ai/check`) e messa a punto del prompt sui dati demo
+
 ## Prompt suggeriti per Claude Code
 - «Leggi CLAUDE.md e docs/06-roadmap.md. Implementa il task M0.1. Fermati e mostrami il risultato prima di procedere.»
 - «Implementa M3.2 seguendo docs/03-database.md e docs/04-api.md. Scrivi prima i test del generatore di istanze.»

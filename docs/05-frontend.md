@@ -33,7 +33,7 @@ src/routes/
     ├── profile/                          # "Il mio profilo": nome, email, avatar e colore del genitore (PATCH /me)
     ├── approvals/                        # premi richiesti / da consegnare + compiti in attesa
     ├── rewards/                          # gestione premi (modale RewardForm)
-    ├── menu/[[week]]/                    # planner: griglia 7×pasti (desktop) / un giorno per tab (mobile), SlotEditor, copia settimana, modelli, proposte dei figli, 👩‍🍳 compito collegato
+    ├── menu/[[week]]/                    # planner: griglia 7×pasti (desktop) / un giorno per tab (mobile), SlotEditor, ✨ Suggerisci menù (`MenuSuggest`: nota facoltativa, anteprima per giorno con checkbox, "Aggiungi al menù" = PUT slot per ogni scelta), copia settimana, modelli, proposte dei figli, 👩‍🍳 compito collegato
     ├── recipes/ · recipes/new/ · recipes/[id]/   # RecipeForm con righe ingredienti (autocomplete), foto (multipart)
     ├── shopping/[[id]]/                  # liste (tab), QuickAdd + preferiti, reparti nell'ordine famiglia, "ce l'ho già", genera dal menù, riordino reparti
     ├── stats/

@@ -625,7 +625,39 @@
     "votes": "{up} 👍 · {down} 👎",
     "help_cook": "Crea compito “aiuta a cucinare”",
     "help_cook_title": "Aiuta a cucinare: {title}",
-    "day_tabs": "Giorni della settimana"
+    "day_tabs": "Giorni della settimana",
+    "suggest": {
+      "button": "✨ Suggerisci menù",
+      "title": "Suggerisci il menù",
+      "intro": "Propongo piatti per i pasti ancora vuoti, partendo dal vostro ricettario, da cosa avete mangiato nelle ultime settimane e dai voti.",
+      "note": "Indicazioni (facoltative)",
+      "note_placeholder": "Es. martedì poco tempo, pesce due volte",
+      "note_hint": "Non scrivere nomi o dati personali.",
+      "generate": "Genera proposte",
+      "regenerate": "Rigenera",
+      "generating": "Sto preparando le proposte…",
+      "nothing": "Nessun pasto vuoto da riempire, oppure il ricettario è vuoto.",
+      "apply": "Aggiungi al menù ({n})",
+      "applied": "{n} pasti aggiunti al menù",
+      "select": "Includi {title} per {meal} di {day}",
+      "source_ai": "Proposte create con l’intelligenza artificiale (Google Gemini) da dati anonimi.",
+      "source_local": "Proposte calcolate dall’app sul vostro storico.",
+      "fallback": {
+        "disabled": "Suggerimenti IA disattivati nelle impostazioni.",
+        "not_configured": "",
+        "rate_limited": "Limite giornaliero di suggerimenti IA raggiunto.",
+        "error": "Il servizio IA non ha risposto."
+      },
+      "idea": "idea",
+      "reason": {
+        "favorite": "Tra le preferite",
+        "kids_favorite": "Piace ai bimbi",
+        "liked": "Ha ricevuto voti positivi",
+        "not_recent": "Non la fate da un po’",
+        "quick": "Veloce per un giorno feriale",
+        "habit": "Come al solito"
+      }
+    }
   },
   "kid_menu": {
     "title": "Menù",
@@ -715,6 +747,8 @@
     "allow_penalties_hint": "Disattivate di default: l’app punta sul rinforzo positivo.",
     "weekly_email": "Riepilogo settimanale via email",
     "weekly_email_hint": "Arriva il lunedì ai genitori con un indirizzo email configurato.",
+    "ai_suggestions": "Suggerimenti del menù con intelligenza artificiale",
+    "ai_suggestions_hint": "Il ricettario e lo storico dei pasti vengono inviati in forma anonima a Google Gemini: niente nomi, né dati dei bambini o della famiglia.",
     "meal_types": "Pasti mostrati nel menù",
     "week_starts_on": "La settimana inizia di",
     "monday": "Lunedì",
@@ -754,7 +788,8 @@
       "1": "HomeQuest salva solo ciò che serve a far funzionare l’app: nome della famiglia, nomi o soprannomi dei bambini, avatar, compiti, punti, menù e liste della spesa.",
       "2": "Per i bambini non chiediamo cognome, email, foto o data di nascita completa (al massimo anno e mese, facoltativi).",
       "3": "Nessun servizio di analisi o pubblicità di terze parti; i registri tecnici non contengono i dati dei bambini.",
-      "4": "Il genitore amministratore è responsabile dei dati della famiglia e può scaricarli o cancellarli in ogni momento."
+      "4": "Il genitore amministratore è responsabile dei dati della famiglia e può scaricarli o cancellarli in ogni momento.",
+      "5": "Se i suggerimenti del menù con intelligenza artificiale sono attivi (Impostazioni), il ricettario, lo storico dei pasti e i voti sommati vengono inviati in forma anonima a Google Gemini (servizio a pagamento, i dati non sono usati per addestrare i modelli). Non inviamo mai nomi, dati dei bambini o della famiglia."
     }
   },
   "onboarding": {

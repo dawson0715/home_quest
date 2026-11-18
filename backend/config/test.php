@@ -16,4 +16,7 @@ $config['components']['urlManager']['showScriptName'] = false;
 // Rate-limit counters must survive the per-request app reset but not leak between runs
 $config['components']['cache'] = ['class' => 'yii\caching\FileCache', 'cachePath' => '@runtime/cache-test'];
 
+// Never call the real AI provider from tests (a dev .env may hold a key)
+$config['params']['gemini']['apiKey'] = null;
+
 return $config;

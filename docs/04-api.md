@@ -51,7 +51,7 @@ Nessun endpoint di registrazione/login: utenti e token si creano da console (`ph
 | Metodo | Path | Ruolo |
 |---|---|---|
 | GET | /family | P → `Family` = `{id, name, settings}` (settings effettivi: default + override) |
-| PATCH | /family | P `{name?, settings?}`: `settings` è **unito** a quelli esistenti; chiavi ammesse `allow_penalties` (bool), `weekly_email` (bool, riepilogo settimanale ai genitori con email), `meal_types` (sottoinsieme non vuoto di breakfast/lunch/snack/dinner), `week_starts_on` (1\|7), `shopping_poll_seconds` (2–60); chiavi sconosciute → 422 |
+| PATCH | /family | P `{name?, settings?}`: `settings` è **unito** a quelli esistenti; chiavi ammesse `allow_penalties` (bool), `weekly_email` (bool, riepilogo settimanale ai genitori con email), `meal_types` (sottoinsieme non vuoto di breakfast/lunch/snack/dinner), `week_starts_on` (1\|7), `shopping_poll_seconds` (2–60), `ai_suggestions` (bool, suggerimenti menù con IA); chiavi sconosciute → 422 |
 | DELETE | /family | A `{confirm_name}` (= nome famiglia, altrimenti 422) → 204: cancellazione **immediata** e definitiva di tutti i dati, degli account dei genitori e delle foto |
 | GET | /family/export | A → tutti i dati della famiglia in JSON (header `Content-Disposition: attachment`), senza token, hash di PIN o chiavi |
 | GET | /family/members | P → `[{id, user_id, username, name, role}]` (non paginato) |
@@ -135,6 +135,7 @@ Payload `POST /tasks`:
 | PUT | /meal-plans/{week_start}/slots/{day}/{meal_type} | P | `{servings? (1–30), entries:[{id?, recipe_id?\|free_text?}]}` (max 6) → `MealSlot`. Sostituisce i piatti `planned` (con `id` = mantenuti, voti inclusi); le proposte dei figli restano |
 | POST | /meal-plans/{week_start}/copy-from | P | `{source_week_start \| template_id}` → `MealPlan`; sostituisce i piatti `planned` della settimana |
 | POST | /meal-plans/{week_start}/save-as-template | P | `{name}` → 201 `{id, name}` |
+| POST | /meal-plans/{week_start}/suggest | P | `{note? (max 200)}` → `{source: "ai"\|"local", fallback_reason: null\|"disabled"\|"not_configured"\|"rate_limited"\|"error", suggestions: [{day_index, date, meal_type, recipe_id, recipe: RecipeSummary\|null, free_text, title, reason (testo IA)\|null, reason_code: "favorite"\|"kids_favorite"\|"liked"\|"not_recent"\|"quick"\|"habit"\|null}]}`. Solo per gli slot dei pasti attivi **senza** piatti `planned`; **non salva nulla** (il client usa PUT slot). L'IA non disponibile non è un errore: si ripiega sull'algoritmo locale |
 | GET | /meal-templates | P | `[{id, name, dishes}]` |
 | DELETE | /meal-templates/{id} | P | 204 |
 | POST | /meal-entries/{id}/vote | P/C | `{value: 1\|-1\|0}` (0 = rimuovi) → `MealEntry` |

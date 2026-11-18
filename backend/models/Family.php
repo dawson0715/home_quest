@@ -23,13 +23,15 @@ class Family extends ActiveRecord
 {
     public const MEAL_TYPES = ['breakfast', 'lunch', 'snack', 'dinner'];
 
-    /** @var array{allow_penalties: bool, weekly_email: bool, meal_types: list<string>, week_starts_on: int, shopping_poll_seconds: int} */
+    /** @var array{allow_penalties: bool, weekly_email: bool, meal_types: list<string>, week_starts_on: int, shopping_poll_seconds: int, ai_suggestions: bool} */
     public const DEFAULT_SETTINGS = [
         'allow_penalties' => false,
         'weekly_email' => false,
         'meal_types' => self::MEAL_TYPES,
         'week_starts_on' => 1,
         'shopping_poll_seconds' => 5,
+        // AI menu suggestions (anonymous data sent to the configured provider); parents can turn it off
+        'ai_suggestions' => true,
     ];
 
     public static function tableName(): string
@@ -76,7 +78,7 @@ class Family extends ActiveRecord
                 $this->addError($attribute, "Unknown setting \"$key\".");
             }
         }
-        foreach (['allow_penalties', 'weekly_email'] as $flag) {
+        foreach (['allow_penalties', 'weekly_email', 'ai_suggestions'] as $flag) {
             if (array_key_exists($flag, $value) && !is_bool($value[$flag])) {
                 $this->addError($attribute, "$flag must be a boolean.");
             }

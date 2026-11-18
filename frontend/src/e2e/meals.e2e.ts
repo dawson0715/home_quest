@@ -84,3 +84,36 @@ test('kid votes a dish and proposes one; parent accepts it', async ({ page }) =>
   await expect(cell).not.toContainText('Proposta di Luca');
   expect(api.dishes.find((d) => d.free_text === 'Pizza!')?.status).toBe('planned');
 });
+
+test('parent gets menu suggestions and adds the chosen ones', async ({ page }) => {
+  const api = createFakeApi();
+  api.recipes.push({
+    id: 501,
+    title: 'Risotto ai funghi',
+    tags: [],
+    is_favorite: true,
+    servings: 4,
+    ingredients: []
+  });
+  await api.install(page);
+  await loginAsParent(page);
+
+  await page.goto('/menu/2026-11-16');
+  await page.getByRole('button', { name: '✨ Suggerisci menù' }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByText('Non scrivere nomi o dati personali.')).toBeVisible();
+  await dialog.getByLabel('Indicazioni (facoltative)').fill('Martedì poco tempo');
+  await dialog.getByRole('button', { name: 'Genera proposte' }).click();
+  await expect(dialog.getByTestId('suggest-source')).toContainText('intelligenza artificiale');
+  expect(api.suggestNotes).toEqual(['Martedì poco tempo']);
+
+  // 7 lunches (ideas) + 7 dinners (recipe): leave out Monday's lunch
+  await dialog.getByLabel('Includi Minestrone per Pranzo di lun 16').uncheck();
+  await dialog.getByRole('button', { name: 'Aggiungi al menù (13)' }).click();
+  await expect(page.getByText('13 pasti aggiunti al menù')).toBeVisible();
+  expect(api.dishes.filter((d) => d.status === 'planned')).toHaveLength(13);
+  expect(api.dishes.some((d) => d.day === 0 && d.meal === 'lunch')).toBe(false);
+  expect(api.dishes.find((d) => d.day === 0 && d.meal === 'dinner')).toMatchObject({
+    recipe_id: 501
+  });
+});
