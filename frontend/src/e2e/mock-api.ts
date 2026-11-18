@@ -97,7 +97,8 @@ export function createFakeApi() {
       weekly_email: false,
       meal_types: ['breakfast', 'lunch', 'snack', 'dinner'],
       week_starts_on: 1,
-      shopping_poll_seconds: 5
+      shopping_poll_seconds: 5,
+      ai_suggestions: true
     } as Record<string, unknown>
   };
   const children: FakeChild[] = [];
@@ -242,6 +243,8 @@ export function createFakeApi() {
     ingredients: unknown[];
   }[] = [];
   const dishes: FakeDish[] = [];
+  /** Notes sent to POST meal-plans/{week}/suggest */
+  const suggestNotes: string[] = [];
   const recipeSummary = (r: (typeof recipes)[number]) => ({
     id: r.id,
     title: r.title,
@@ -364,6 +367,8 @@ export function createFakeApi() {
     can_check_shopping: false,
     archived: false
   };
+  const user = { id: 2, username: 'anna', name: 'Anna', email: null as string | null };
+  const parentMe = () => ({ user, family, role: 'admin', player: childJson(adult) });
   const occJson = (o: FakeOccurrence) => {
     const task = tasks.find((x) => x.id === o.task_id) as FakeTask;
     const child = (
@@ -467,14 +472,7 @@ export function createFakeApi() {
     }
 
     if (path === 'me' && method === 'GET') {
-      if (isParent) {
-        return ok(route, {
-          user: { id: 2, username: 'anna', name: 'Anna' },
-          family,
-          role: 'admin',
-          player: childJson(adult)
-        });
-      }
+      if (isParent) return ok(route, parentMe());
       if (device)
         return ok(route, { device: { id: device.id, name: device.name }, family, role: 'device' });
       if (childSession) return ok(route, { child: childJson(childSession), family, role: 'child' });
@@ -668,6 +666,13 @@ export function createFakeApi() {
 
     if (!isParent) return fail(route, 401, 'unauthorized');
 
+    if (path === 'me' && method === 'PATCH') {
+      if ('name' in body) user.name = adult.name = body.name;
+      if ('email' in body) user.email = body.email || null;
+      if (body.avatar) adult.avatar = body.avatar;
+      if (body.color) adult.color = body.color;
+      return ok(route, parentMe());
+    }
     if (path === 'family' && method === 'PATCH') {
       if (body.name !== undefined) family.name = body.name;
       if (body.settings) Object.assign(family.settings, body.settings);
@@ -757,6 +762,32 @@ export function createFakeApi() {
       return ok(route, [
         { id: 1, name: 'Pomodori', default_unit: 'g', shopping_category_id: 1, is_custom: false }
       ]);
+    }
+    const suggestMatch = path.match(/^meal-plans\/(\d{4}-\d{2}-\d{2})\/suggest$/);
+    if (suggestMatch && method === 'POST') {
+      // AI-like answer: dinners from the cookbook, lunches as free ideas
+      suggestNotes.push(String(body.note ?? ''));
+      const plan = planJson(suggestMatch[1], 'user:2');
+      const empty = plan.slots.filter(
+        (s) =>
+          ['lunch', 'dinner'].includes(s.meal_type) &&
+          !s.entries.some((e) => e.status === 'planned')
+      );
+      const suggestions = empty.map((s, i) => {
+        const recipe = s.meal_type === 'dinner' ? recipes[i % Math.max(1, recipes.length)] : null;
+        return {
+          day_index: s.day_index,
+          date: s.date,
+          meal_type: s.meal_type,
+          recipe_id: recipe?.id ?? null,
+          recipe: recipe ? recipeSummary(recipe) : null,
+          free_text: recipe ? null : 'Minestrone',
+          title: recipe?.title ?? 'Minestrone',
+          reason: recipe ? 'Tra le preferite della famiglia' : 'Di stagione',
+          reason_code: null
+        };
+      });
+      return ok(route, { source: 'ai', fallback_reason: null, suggestions });
     }
     const planMatch = path.match(/^meal-plans\/(\d{4}-\d{2}-\d{2})(?:\/slots\/(\d)\/([a-z]+))?$/);
     if (planMatch && method === 'GET') return ok(route, planJson(planMatch[1], 'user:2'));
@@ -1055,8 +1086,15 @@ export function createFakeApi() {
       ]);
     }
     if (path === 'occurrences' && method === 'GET') {
-      const status = url.searchParams.get('status');
-      return ok(route, occurrences.filter((o) => !status || o.status === status).map(occJson));
+      const statuses = url.searchParams.get('status')?.split(',');
+      const limit = Number(url.searchParams.get('limit') ?? 500);
+      return ok(
+        route,
+        occurrences
+          .filter((o) => !statuses || statuses.includes(o.status))
+          .slice(0, limit)
+          .map(occJson)
+      );
     }
     if (path === 'occurrences/bulk-approve' && method === 'POST') {
       const approved: number[] = [];
@@ -1117,10 +1155,13 @@ export function createFakeApi() {
     redemptions,
     recipes,
     dishes,
+    suggestNotes,
     shop,
     net,
     family,
     points,
+    user,
+    adult,
     async install(page: Page) {
       await page.route('**/api/v1/**', handle);
     },

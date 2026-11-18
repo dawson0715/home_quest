@@ -26,13 +26,14 @@ src/routes/
 │   ├── kid-menu/                         # menù da oggi a fine settimana: 👍/👎 e proposta di un piatto (non `menu/`: collide)
 │   └── kid-shopping/                     # solo se can_check_shopping (non `shopping/`: collide)
 └── (parent)/                             # guard: role admin|coparent
-    ├── dashboard/                        # oggi: da approvare, progressi figli, pasti di oggi
+    ├── dashboard/                        # oggi: da approvare, ultimi completati (tutti i giocatori), progressi figli, pasti di oggi
     ├── children/ · children/[id]/        # [id]: profilo, PIN, PointsPanel (bonus/penalità + storico punti)
     ├── tasks/ · tasks/new/ (?template=id dalla libreria) · tasks/[id]/   # assegnatari = tutti i giocatori (anche genitori), opzione "Libero"
     ├── my-game/                          # "Il mio gioco": compiti di oggi del genitore, punti, premi
+    ├── profile/                          # "Il mio profilo": nome, email, avatar e colore del genitore (PATCH /me)
     ├── approvals/                        # premi richiesti / da consegnare + compiti in attesa
     ├── rewards/                          # gestione premi (modale RewardForm)
-    ├── menu/[[week]]/                    # planner: griglia 7×pasti (desktop) / un giorno per tab (mobile), SlotEditor, copia settimana, modelli, proposte dei figli, 👩‍🍳 compito collegato
+    ├── menu/[[week]]/                    # planner: griglia 7×pasti (desktop) / un giorno per tab (mobile), SlotEditor, ✨ Suggerisci menù (`MenuSuggest`: nota facoltativa, anteprima per giorno con checkbox, "Aggiungi al menù" = PUT slot per ogni scelta), copia settimana, modelli, proposte dei figli, 👩‍🍳 compito collegato
     ├── recipes/ · recipes/new/ · recipes/[id]/   # RecipeForm con righe ingredienti (autocomplete), foto (multipart)
     ├── shopping/[[id]]/                  # liste (tab), QuickAdd + preferiti, reparti nell'ordine famiglia, "ce l'ho già", genera dal menù, riordino reparti
     ├── stats/

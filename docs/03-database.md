@@ -41,7 +41,7 @@ Nota: `id` è `INT` con segno (`primaryKey()` di Yii), quindi le FK verso `user`
 | id | PK |
 |---|---|
 | name | VARCHAR(80) |
-| settings | JSON NULL | solo le chiavi modificate; il model espone i valori effettivi (default + override) e rifiuta chiavi sconosciute. Default: `{ "allow_penalties": false, "weekly_email": false, "meal_types": ["breakfast","lunch","snack","dinner"], "week_starts_on": 1, "shopping_poll_seconds": 5 }` |
+| settings | JSON NULL | solo le chiavi modificate; il model espone i valori effettivi (default + override) e rifiuta chiavi sconosciute. Default: `{ "allow_penalties": false, "weekly_email": false, "meal_types": ["breakfast","lunch","snack","dinner"], "week_starts_on": 1, "shopping_poll_seconds": 5, "ai_suggestions": true }` |
 | created_at, updated_at | |
 
 ### `family_member`

@@ -22,7 +22,8 @@
           weekly_email: false,
           meal_types: ALL_MEALS,
           week_starts_on: 1,
-          shopping_poll_seconds: 5
+          shopping_poll_seconds: 5,
+          ai_suggestions: true
         }
   );
   let members = $state<FamilyMember[]>([]);
@@ -96,6 +97,17 @@
       <span>
         {t('settings.weekly_email')}
         <span class="block text-sm text-ink-muted">{t('settings.weekly_email_hint')}</span>
+      </span>
+    </label>
+    <label class="flex items-start gap-3">
+      <input
+        type="checkbox"
+        class="mt-1 size-5 accent-brand"
+        bind:checked={settings.ai_suggestions}
+      />
+      <span>
+        {t('settings.ai_suggestions')}
+        <span class="block text-sm text-ink-muted">{t('settings.ai_suggestions_hint')}</span>
       </span>
     </label>
     <fieldset class="flex flex-wrap gap-2">

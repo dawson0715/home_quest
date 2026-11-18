@@ -89,13 +89,14 @@ Il pool fissa fuso, limiti di upload (6 MB, l'API accetta foto fino a 5 MB) e lo
    ```bash
    cd /var/www-homequest/backend
    cp .env.example .env && chmod 600 .env
-   nano .env        # DB_PASSWORD, COOKIE_KEY (openssl rand -hex 32), MAILER_*
+   nano .env        # DB_PASSWORD, COOKIE_KEY (openssl rand -hex 32), MAILER_*, GEMINI_API_KEY (facoltativa, piano a pagamento)
    mkdir -p runtime/logs web/uploads/recipes
    ```
 3. **Database e chiavi push**:
    ```bash
    php yii migrate --interactive=0
    php yii push/generate-keys     # copia le chiavi in .env (VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY)
+   php yii ai/check               # se GEMINI_API_KEY è impostata: verifica chiave, modello e formato API (nessun dato di famiglia)
    ```
 4. **Primo genitore e famiglia**:
    ```bash

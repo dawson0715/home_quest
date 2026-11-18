@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace tests\functional\family;
 
+use app\models\ChildProfile;
 use app\models\Family;
 use app\models\FamilyMember;
+use app\models\User;
 use FunctionalTester;
 use tests\_support\FamilyFactory;
 
@@ -33,6 +35,56 @@ final class FamilyCest
         $I->sendGet('me');
         $I->seeResponseCodeIs(200);
         $I->seeResponseContainsJson(['data' => ['family' => null, 'role' => null]]);
+    }
+
+    public function patchMeUpdatesUserAndGameProfile(FunctionalTester $I): void
+    {
+        $family = FamilyFactory::family('Rossi');
+        $member = $I->amFamilyMember($family);
+        $other = FamilyFactory::member(FamilyFactory::family('Bianchi'));
+
+        $I->sendPatch('me', ['name' => ' Anna ', 'email' => 'anna@example.com', 'avatar' => 'fox', 'color' => '#aa3300']);
+
+        $I->seeResponseCodeIs(200);
+        $I->seeResponseContainsJson(['data' => [
+            'user' => ['id' => $member->user_id, 'name' => 'Anna', 'email' => 'anna@example.com'],
+            'player' => ['name' => 'Anna', 'avatar' => 'fox', 'color' => '#AA3300', 'is_adult' => true],
+        ]]);
+        $I->seeRecord(User::class, ['id' => $member->user_id, 'name' => 'Anna', 'email' => 'anna@example.com']);
+        $I->seeRecord(ChildProfile::class, ['user_id' => $member->user_id, 'family_id' => $family->id, 'avatar' => 'fox']);
+        // other families' profiles untouched
+        $I->seeRecord(ChildProfile::class, ['user_id' => $other->user_id, 'avatar' => 'owl']);
+
+        // partial: only the avatar; email "" clears it
+        $I->sendPatch('me', ['avatar' => 'lion', 'email' => '']);
+        $I->seeResponseCodeIs(200);
+        $I->seeResponseContainsJson(['data' => ['user' => ['name' => 'Anna', 'email' => null], 'player' => ['avatar' => 'lion']]]);
+    }
+
+    public function patchMeValidates(FunctionalTester $I): void
+    {
+        $I->amFamilyMember();
+        FamilyFactory::user('taken')->updateAttributes(['email' => 'taken@example.com']);
+
+        foreach ([
+            ['email' => 'not-an-email'],
+            ['email' => 'taken@example.com'],
+            ['avatar' => 'spaceship'],
+            ['color' => 'red'],
+            ['name' => ''],
+            ['name' => str_repeat('a', 41)],
+        ] as $body) {
+            $I->sendPatch('me', $body);
+            $I->seeErrorEnvelope(422, 'validation_failed');
+            $I->seeResponseContainsJson(['meta' => ['errors' => [['field' => array_key_first($body)]]]]);
+        }
+    }
+
+    public function patchMeIsForParentsOnly(FunctionalTester $I): void
+    {
+        $I->amChild(FamilyFactory::child(FamilyFactory::family()));
+        $I->sendPatch('me', ['name' => 'Hacker']);
+        $I->seeErrorEnvelope(403, 'forbidden');
     }
 
     public function patchMergesSettings(FunctionalTester $I): void

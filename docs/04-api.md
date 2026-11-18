@@ -44,13 +44,14 @@ Nessun endpoint di registrazione/login: utenti e token si creano da console (`ph
 
 | Metodo | Path | Ruolo | Note |
 |---|---|---|---|
-| GET | /me | P/C | `{user: {id, username, name}, family: Family\|null, role: "admin"\|"coparent"\|null, player: Child\|null}` (`player` = profilo di gioco del genitore). `family`/`role` null se l'utente non è in nessuna famiglia. Usato dal frontend per validare il token inserito. |
+| GET | /me | P/C | `{user: {id, username, name, email}, family: Family\|null, role: "admin"\|"coparent"\|null, player: Child\|null}` (`player` = profilo di gioco del genitore). `family`/`role` null se l'utente non è in nessuna famiglia. Usato dal frontend per validare il token inserito. |
+| PATCH | /me | P | `{name?, email?\|null, avatar?, color?}` → come `GET /me`. Aggiornamento parziale dei dati del genitore: `name` (max 40) va sia in `user.name` sia nel suo profilo di gioco, `avatar`/`color` nel profilo di gioco, `email` (unica, `""`/null la rimuove) serve al riepilogo settimanale. Con device/child token → 403 `forbidden`. |
 
 ## Famiglia, membri, dispositivi
 | Metodo | Path | Ruolo |
 |---|---|---|
 | GET | /family | P → `Family` = `{id, name, settings}` (settings effettivi: default + override) |
-| PATCH | /family | P `{name?, settings?}`: `settings` è **unito** a quelli esistenti; chiavi ammesse `allow_penalties` (bool), `weekly_email` (bool, riepilogo settimanale ai genitori con email), `meal_types` (sottoinsieme non vuoto di breakfast/lunch/snack/dinner), `week_starts_on` (1\|7), `shopping_poll_seconds` (2–60); chiavi sconosciute → 422 |
+| PATCH | /family | P `{name?, settings?}`: `settings` è **unito** a quelli esistenti; chiavi ammesse `allow_penalties` (bool), `weekly_email` (bool, riepilogo settimanale ai genitori con email), `meal_types` (sottoinsieme non vuoto di breakfast/lunch/snack/dinner), `week_starts_on` (1\|7), `shopping_poll_seconds` (2–60), `ai_suggestions` (bool, suggerimenti menù con IA); chiavi sconosciute → 422 |
 | DELETE | /family | A `{confirm_name}` (= nome famiglia, altrimenti 422) → 204: cancellazione **immediata** e definitiva di tutti i dati, degli account dei genitori e delle foto |
 | GET | /family/export | A → tutti i dati della famiglia in JSON (header `Content-Disposition: attachment`), senza token, hash di PIN o chiavi |
 | GET | /family/members | P → `[{id, user_id, username, name, role}]` (non paginato) |
@@ -79,7 +80,7 @@ Nessun endpoint di registrazione/login: utenti e token si creano da console (`ph
 | GET/PATCH | /tasks/{id} | P | PATCH parziale; `assignee_ids` e `checklist` se presenti sostituiscono (voci con `id` = aggiornate, senza = nuove, mancanti = eliminate) |
 | DELETE | /tasks/{id} | P | 204: eliminato se senza storico, altrimenti `is_active=false` |
 | GET | /task-templates | P | `?age=7` → `[{id, title_key, icon, min_age, max_age, default_points, category, time_of_day, recurrence_type}]` |
-| GET | /occurrences | P | `?date=2026-11-16&child_id=&status=submitted[,rejected]` → `Occurrence[]` con `child` (`{id,name,avatar,color,has_pin}`); senza `date` = oggi, salvo se c'è `status` (tutte le date). Max 500 |
+| GET | /occurrences | P | `?date=2026-11-16&child_id=&status=submitted[,rejected]` → `Occurrence[]` con `child` (`{id,name,avatar,color,has_pin}`); senza `date` = oggi, salvo se c'è `status` (tutte le date). `limit` (1–500, default 500); `sort=recent` ordina per `submitted_at` decrescente (home "Ultimi completati"), altrimenti `due_date` desc + `submitted_at` asc |
 | GET | /me/today | C/P | istanze di oggi del giocatore (figlio, o il genitore col suo profilo di gioco), raggruppate per `time_of_day`; i compiti singoli restano finché aperti; le istanze `taken` non compaiono |
 | PATCH | /occurrences/{id}/checklist | C/P (solo proprie) | `{item_id, done}` → `Occurrence` |
 | POST | /occurrences/{id}/submit | C/P (solo proprie, di oggi) | compito libero già completato da un altro → 409 `task_taken` (o 422 `invalid_transition` se la tua istanza è già `taken`); checklist incompleta → 422 `checklist_incomplete`; risposta `{occurrence, points_awarded, level_up, balance, new_badges}`: `approved` subito se il compito non richiede approvazione |
@@ -134,6 +135,7 @@ Payload `POST /tasks`:
 | PUT | /meal-plans/{week_start}/slots/{day}/{meal_type} | P | `{servings? (1–30), entries:[{id?, recipe_id?\|free_text?}]}` (max 6) → `MealSlot`. Sostituisce i piatti `planned` (con `id` = mantenuti, voti inclusi); le proposte dei figli restano |
 | POST | /meal-plans/{week_start}/copy-from | P | `{source_week_start \| template_id}` → `MealPlan`; sostituisce i piatti `planned` della settimana |
 | POST | /meal-plans/{week_start}/save-as-template | P | `{name}` → 201 `{id, name}` |
+| POST | /meal-plans/{week_start}/suggest | P | `{note? (max 200)}` → `{source: "ai"\|"local", fallback_reason: null\|"disabled"\|"not_configured"\|"rate_limited"\|"error", suggestions: [{day_index, date, meal_type, recipe_id, recipe: RecipeSummary\|null, free_text, title, reason (testo IA)\|null, reason_code: "favorite"\|"kids_favorite"\|"liked"\|"not_recent"\|"quick"\|"habit"\|null}]}`. Solo per gli slot dei pasti attivi **senza** piatti `planned`; **non salva nulla** (il client usa PUT slot). L'IA non disponibile non è un errore: si ripiega sull'algoritmo locale |
 | GET | /meal-templates | P | `[{id, name, dishes}]` |
 | DELETE | /meal-templates/{id} | P | 204 |
 | POST | /meal-entries/{id}/vote | P/C | `{value: 1\|-1\|0}` (0 = rimuovi) → `MealEntry` |

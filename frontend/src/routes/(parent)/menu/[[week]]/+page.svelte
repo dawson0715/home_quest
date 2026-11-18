@@ -13,6 +13,7 @@
   import { generateShoppingList, listShoppingLists } from '#lib/api/endpoints/shopping.ts';
   import { ApiError } from '#lib/api/errors.ts';
   import type { MealEntry, MealPlan, MealSlot, MealTemplate } from '#lib/api/types.ts';
+  import MenuSuggest from '#lib/components/meals/MenuSuggest.svelte';
   import SlotEditor from '#lib/components/meals/SlotEditor.svelte';
   import Button from '#lib/components/ui/Button.svelte';
   import Input from '#lib/components/ui/Input.svelte';
@@ -32,6 +33,7 @@
   let saveTemplateOpen = $state(false);
   let templateName = $state('');
   let mobileDay = $state(0);
+  let suggestOpen = $state(false);
 
   const week = $derived(data.week);
   const days = $derived([0, 1, 2, 3, 4, 5, 6].map((i) => addDays(week, i)));
@@ -233,6 +235,7 @@
     </div>
   </div>
   <div class="flex flex-wrap gap-2">
+    <Button onclick={() => (suggestOpen = true)}>{t('menu.suggest.button')}</Button>
     <Button variant="secondary" onclick={copyLastWeek}>{t('menu.copy_last_week')}</Button>
     <Button variant="secondary" onclick={openTemplates}>{t('menu.use_template')}</Button>
     <Button variant="ghost" onclick={() => (saveTemplateOpen = true)}
@@ -336,6 +339,19 @@
         toasts.success(t('menu.slot_saved'));
       }}
       oncancel={() => (editing = null)}
+    />
+  {/if}
+</Modal>
+
+<Modal bind:open={suggestOpen} title={t('menu.suggest.title')}>
+  {#if suggestOpen}
+    <MenuSuggest
+      weekStart={week}
+      onapplied={async (n) => {
+        suggestOpen = false;
+        toasts.success(t('menu.suggest.applied', { n }));
+        await load();
+      }}
     />
   {/if}
 </Modal>

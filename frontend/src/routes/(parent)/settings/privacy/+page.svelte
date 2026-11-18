@@ -64,7 +64,7 @@
   <section class="flex flex-col gap-2 rounded-card bg-surface p-5 shadow-sm">
     <h2 class="text-lg font-semibold">{t('privacy.info_title')}</h2>
     <ul class="list-disc space-y-1 pl-5">
-      {#each [1, 2, 3, 4] as n (n)}
+      {#each [1, 2, 3, 4, 5] as n (n)}
         <li>{t(`privacy.info.${n}`)}</li>
       {/each}
     </ul>

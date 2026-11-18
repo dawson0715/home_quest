@@ -6,6 +6,7 @@ $db = require __DIR__ . '/db.php';
 date_default_timezone_set('Europe/Rome');
 
 Yii::$container->setSingleton(\app\components\PushSender::class, fn () => \app\components\WebPushSender::fromParams());
+Yii::$container->setSingleton(\app\components\AiClient::class, fn () => \app\components\GeminiClient::fromParams());
 
 $config = [
     'id' => 'basic',
@@ -84,6 +85,7 @@ $config = [
             'rules' => [
                 'GET api/v1/health' => 'v1/health/index',
                 'GET api/v1/me' => 'v1/me/index',
+                'PATCH api/v1/me' => 'v1/me/update',
                 'GET api/v1/family' => 'v1/family/view',
                 'PATCH api/v1/family' => 'v1/family/update',
                 'GET api/v1/family/members' => 'v1/family/members',
@@ -151,6 +153,7 @@ $config = [
                 'POST api/v1/meal-plans/<week:\d{4}-\d{2}-\d{2}>/copy-from' => 'v1/meal-plan/copy-from',
                 'POST api/v1/meal-plans/<week:\d{4}-\d{2}-\d{2}>/save-as-template' => 'v1/meal-plan/save-as-template',
                 'POST api/v1/meal-plans/<week:\d{4}-\d{2}-\d{2}>/proposals' => 'v1/meal-plan/propose',
+                'POST api/v1/meal-plans/<week:\d{4}-\d{2}-\d{2}>/suggest' => 'v1/meal-plan/suggest',
                 'POST api/v1/meal-entries/<id:\d+>/vote' => 'v1/meal-plan/vote',
                 'POST api/v1/meal-entries/<id:\d+>/<decision:(accept|reject)>' => 'v1/meal-plan/review',
                 'GET api/v1/meal-templates' => 'v1/meal-plan/templates',

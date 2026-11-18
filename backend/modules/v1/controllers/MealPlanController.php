@@ -12,6 +12,7 @@ use app\models\ChildProfile;
 use app\models\MealEntry;
 use app\models\MealPlanWeek;
 use app\services\MealPlanService;
+use app\services\MenuSuggestionService;
 use Yii;
 use yii\web\NotFoundHttpException;
 
@@ -120,6 +121,23 @@ class MealPlanController extends ApiController
         $entry = $service->propose($service->getOrCreateWeek($week), $child, (array) Yii::$app->request->getBodyParams());
         Yii::$app->response->statusCode = 201;
         return $service->entryJson($entry);
+    }
+
+    /**
+     * POST /meal-plans/{week}/suggest {note?} (parents) → preview of dishes for the empty slots, nothing saved
+     *
+     * @return array{source: string, fallback_reason: string|null, suggestions: list<array<string, mixed>>}
+     */
+    public function actionSuggest(string $week): array
+    {
+        $context = $this->context();
+        $context->requireParent();
+        $plan = $this->service()->getOrCreateWeek($week);
+        $note = Yii::$app->request->getBodyParam('note');
+        if ($note !== null && !is_string($note)) {
+            throw new ApiException(ErrorCode::VALIDATION_FAILED, 'note must be a string.', 422, 'note');
+        }
+        return MenuSuggestionService::create($context->getFamily())->suggest($plan, (string) $note);
     }
 
     /**

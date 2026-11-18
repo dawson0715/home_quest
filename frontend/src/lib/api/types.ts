@@ -36,6 +36,8 @@ export interface FamilySettings {
   meal_types: MealType[];
   week_starts_on: 1 | 7;
   shopping_poll_seconds: number;
+  /** AI menu suggestions (anonymous data sent to the provider) */
+  ai_suggestions: boolean;
 }
 
 export interface Family {
@@ -53,6 +55,16 @@ export interface User {
   id: number;
   username: string;
   name: string | null;
+  /** only in the user's own /me */
+  email: string | null;
+}
+
+/** PATCH /me (parent): name goes to the user and the game profile. */
+export interface ProfileUpdate {
+  name?: string;
+  email?: string | null;
+  avatar?: Avatar;
+  color?: string;
 }
 
 export interface ParentMe {
@@ -443,6 +455,31 @@ export interface MealPlan {
   notes: string | null;
   meal_types: MealType[];
   slots: MealSlot[];
+}
+
+/** Why the local algorithm picked a dish (i18n `menu.suggest.reason.<code>`). */
+export type MealSuggestionReason =
+  'favorite' | 'kids_favorite' | 'liked' | 'not_recent' | 'quick' | 'habit';
+
+/** A dish proposed for an empty slot (preview, not saved). */
+export interface MealSuggestion {
+  day_index: number;
+  date: string;
+  meal_type: MealType;
+  recipe_id: number | null;
+  recipe: RecipeSummary | null;
+  free_text: string | null;
+  title: string;
+  /** AI explanation (Italian), null for local picks */
+  reason: string | null;
+  reason_code: MealSuggestionReason | null;
+}
+
+export interface MealSuggestions {
+  source: 'ai' | 'local';
+  /** Why the AI was not used (null when source = ai) */
+  fallback_reason: 'disabled' | 'not_configured' | 'rate_limited' | 'error' | null;
+  suggestions: MealSuggestion[];
 }
 
 export interface MealTemplate {

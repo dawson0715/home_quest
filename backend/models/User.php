@@ -60,11 +60,13 @@ class User extends ActiveRecord implements IdentityInterface
     }
 
     /**
+     * Serialized only for the user themselves (GET/PATCH /me).
+     *
      * @return array<int|string, string|\Closure>
      */
     public function fields()
     {
-        return ['id', 'username', 'name'];
+        return ['id', 'username', 'name', 'email'];
     }
 
     public function getFamilyMember(): ActiveQuery

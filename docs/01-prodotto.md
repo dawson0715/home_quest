@@ -53,6 +53,7 @@ Il figlio **non ha email né password**: accede da un dispositivo collegato tram
 - Ogni slot contiene uno o più **piatti**: scelti dal ricettario di famiglia o testo libero.
 - **Ricettario**: ricetta con nome, foto opzionale, porzioni, ingredienti (quantità + unità), procedimento, tag (veloce, vegetariano, preferito dai bimbi).
 - Copia settimana precedente / salva settimana come modello.
+- **Suggerisci menù** (solo genitori): propone piatti per i pasti ancora vuoti partendo dal ricettario, dallo storico delle ultime 8 settimane (varietà, ricette che non si fanno da tempo, abitudini di colazione/merenda) e dai voti; il genitore può aggiungere un'indicazione libera ("martedì poco tempo"), sceglie quali proposte tenere e solo allora vengono salvate. Con l'impostazione "Suggerimenti IA" (attiva di default) le scelte sono fatte da un modello di intelligenza artificiale (Google Gemini) con **dati anonimi**; disattivata, o se il servizio non risponde, le calcola l'app.
 - **Coinvolgimento figli**: i figli possono votare (👍/👎) le proposte e proporre un piatto per un giorno (il genitore approva). Opzionale: punti per chi aiuta a cucinare tramite compito collegato.
 - Indicazione persone a tavola per pasto (per scalare le quantità).
 

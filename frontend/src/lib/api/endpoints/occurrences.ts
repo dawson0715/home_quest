@@ -3,12 +3,20 @@ import type { BulkApproveResult, Occurrence, Today, TransitionResult } from '../
 
 // Parent side
 export async function listOccurrences(
-  params: { date?: string; childId?: number; status?: string } = {}
+  params: {
+    date?: string;
+    childId?: number;
+    status?: string;
+    sort?: 'recent';
+    limit?: number;
+  } = {}
 ): Promise<Occurrence[]> {
   const q = new URLSearchParams();
   if (params.date) q.set('date', params.date);
   if (params.childId !== undefined) q.set('child_id', String(params.childId));
   if (params.status) q.set('status', params.status);
+  if (params.sort) q.set('sort', params.sort);
+  if (params.limit !== undefined) q.set('limit', String(params.limit));
   const qs = q.toString();
   return (await api.get<Occurrence[]>(qs ? `occurrences?${qs}` : 'occurrences')).data;
 }
