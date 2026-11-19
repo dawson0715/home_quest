@@ -22,6 +22,12 @@
     "ok": "Server raggiungibile",
     "degraded": "Server raggiungibile, database non disponibile"
   },
+  "offline": {
+    "banner": "Sei offline: menù e spesa mostrano l’ultima copia salvata ({when}). Il resto dell’app torna con la connessione.",
+    "banner_plain": "Sei offline: menù e spesa mostrano l’ultima copia salvata. Il resto dell’app torna con la connessione.",
+    "not_saved": "Questa pagina non è salvata sul dispositivo: riprova quando torna la connessione.",
+    "read_only": "Sola lettura finché sei offline"
+  },
   "errors": {
     "unknown_error": "Si è verificato un errore imprevisto",
     "network_error": "Connessione assente: controlla la rete e riprova",

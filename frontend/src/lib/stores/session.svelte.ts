@@ -1,6 +1,8 @@
 import { configureClient } from '../api/client';
 import { ApiError } from '../api/errors';
+import { untrack } from 'svelte';
 import { getMe } from '../api/endpoints/family';
+import { clearCache } from '../api/offline-cache';
 import type { FamilyRole, ParentMe } from '../api/types';
 
 const TOKEN_KEY = 'hq.token';
@@ -80,6 +82,8 @@ class Session {
   }
 
   clear(): void {
+    const token = untrack(() => this.token); // may run inside an effect
+    if (token) clearCache(token);
     this.token = null;
     this.me = null;
     storage.set(null);

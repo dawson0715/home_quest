@@ -25,19 +25,9 @@ sw.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== sw.location.origin) return;
 
-  // Shopping lists: network first, last copy when offline (the app's own queue handles writes)
-  if (url.pathname.startsWith('/api/v1/shopping-lists')) {
-    event.respondWith(
-      fetch(request)
-        .then(async (response) => {
-          if (response.ok) (await caches.open(CACHE)).put(request, response.clone());
-          return response;
-        })
-        .catch(async () => (await caches.match(request)) ?? Response.error())
-    );
-    return;
-  }
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/uploads/')) return; // network only
+  // API: network only. Offline copies of menu and shopping live in the app (lib/api/offline-cache.ts),
+  // which knows they are stale and shows them read-only; a cached 200 here would hide that.
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/uploads/')) return;
 
   // App shell: cached assets; navigations fall back to the SPA index when offline
   event.respondWith(

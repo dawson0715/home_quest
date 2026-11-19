@@ -1,4 +1,6 @@
+import { connectivity } from '../stores/connectivity.svelte';
 import { ApiError, NETWORK_ERROR } from './errors';
+import { isCacheable, readCache, writeCache } from './offline-cache';
 import type { Envelope } from './types';
 
 export const API_BASE = '/api/v1';
@@ -31,6 +33,8 @@ export interface RequestOptions {
 /**
  * Calls the API and returns the unwrapped envelope.
  * Throws ApiError on HTTP errors (with backend error codes) and network failures.
+ * Cacheable GETs (offline-cache.ts) fall back to the last good copy when the network
+ * is down: `meta.offline = true`, `meta.cached_at` = unix ms of that copy.
  */
 export async function request<T>(
   method: Method,
@@ -46,16 +50,23 @@ export async function request<T>(
   if (token) headers.Authorization = `Bearer ${token}`;
   if (opts.ifNoneMatch) headers['If-None-Match'] = opts.ifNoneMatch;
 
+  const cleanPath = path.replace(/^\//, '');
+  const cacheable = method === 'GET' && isCacheable(cleanPath);
+
   let res: Response;
   try {
-    res = await fetchFn(`${API_BASE}/${path.replace(/^\//, '')}`, {
+    res = await fetchFn(`${API_BASE}/${cleanPath}`, {
       method,
       headers,
       body: body === undefined ? undefined : isForm ? (body as FormData) : JSON.stringify(body)
     });
   } catch {
+    const cached = cacheable ? readCache(token, cleanPath) : null;
+    connectivity.markOffline(cached?.at);
+    if (cached) return { data: cached.data as T, meta: { offline: true, cached_at: cached.at } };
     throw new ApiError(0, [{ code: NETWORK_ERROR, message: 'Network error' }]);
   }
+  connectivity.markOnline();
 
   if (res.status === 204) return { data: null as T, meta: {} };
   if (res.status === 304) return { data: null as T, meta: { not_modified: true } };
@@ -69,7 +80,17 @@ export async function request<T>(
     throw new ApiError(res.status, errors);
   }
 
+  if (cacheable && json) writeCache(token, cleanPath, json.data);
   return json ?? { data: null as T, meta: {} };
+}
+
+/**
+ * Updates the offline copy of a GET resource with a fresh version received another way
+ * (e.g. the list returned by POST /sync), so the copy shown offline is the latest one.
+ */
+export function rememberResponse(path: string, data: unknown, opts: { token?: string } = {}): void {
+  const token = opts.token !== undefined ? opts.token : getToken();
+  if (isCacheable(path)) writeCache(token, path, data);
 }
 
 export const api = {

@@ -1,3 +1,4 @@
+import { untrack } from 'svelte';
 import {
   getChildMe,
   getDeviceMe,
@@ -6,6 +7,7 @@ import {
   selectChild
 } from '../api/endpoints/devices';
 import { ApiError } from '../api/errors';
+import { clearCache } from '../api/offline-cache';
 import type { Child, ChildProfileCard, Family } from '../api/types';
 
 const DEVICE_KEY = 'hq.device';
@@ -105,6 +107,10 @@ class DeviceSession {
 
   /** Back to the profile picker (the child session token is dropped). */
   switchProfile(): void {
+    // untracked: callers run this inside effects (profiles page), which must not
+    // start depending on the token they are clearing
+    const child = untrack(() => this.childToken);
+    if (child) clearCache(child);
     this.childToken = null;
     this.child = null;
     write(CHILD_KEY, null);
@@ -113,6 +119,8 @@ class DeviceSession {
   /** Unpairs locally (e.g. after revocation). */
   forget(): void {
     this.switchProfile();
+    const device = untrack(() => this.deviceToken);
+    if (device) clearCache(device);
     this.deviceToken = null;
     this.deviceName = null;
     this.family = null;

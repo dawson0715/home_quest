@@ -60,13 +60,15 @@ Link e navigazione: sempre `resolve()` di `$app/paths` con l'**ID della rotta** 
 ```
 src/lib/
 ├── api/
-│   ├── client.ts        # fetch wrapper: base URL `/api/v1`, Bearer, unwrap envelope {data, meta}, `meta.errors[].code` → ApiError; 401 → logout e redirect a /login
+│   ├── client.ts        # fetch wrapper: base URL `/api/v1`, Bearer, unwrap envelope {data, meta}, `meta.errors[].code` → ApiError; 401 → logout e redirect a /login; GET in cache offline → ultima copia con `meta.offline`/`meta.cached_at`
+│   ├── offline-cache.ts # ultima risposta di `me`, `meal-plans/{week}`, `recipes`, `shopping-categories`, `shopping-lists[/{id}]`, `favorite-items` in localStorage (`hq.cache.<hash token>:<path>`, max 40 voci), cancellata al logout/cambio profilo
 │   ├── types.ts
 │   └── endpoints/       # auth.ts, tasks.ts, rewards.ts, meals.ts, shopping.ts ...
 ├── stores/
 │   ├── session.svelte.ts   # token (localStorage `hq.token`, accessi protetti da try/catch) + `/me`; `ready()` idempotente, `login(token)`, `clear()`; collega il client (Bearer, 401 → clear). Un utente senza famiglia non può entrare (`no_family`)
 │   ├── device.svelte.ts    # dispositivo dei bimbi: `hq.device` (d_…) + `hq.child` (c_…) in localStorage; pair, profiles, selectChild, switchProfile, forget. Le chiamate da dispositivo/figlio passano il token esplicito (`api.get(path, { token })`), mai quello del genitore
 │   ├── toast.svelte.ts
+│   ├── connectivity.svelte.ts # `offline` (ultima richiesta fallita per rete o evento `offline`) + `cachedAt`; usato da OfflineBanner, menù in sola lettura, ShoppingStore
 │   └── shopping.svelte.ts  # classe ShoppingStore (una per pagina; token figlio opzionale): ETag/304, polling solo con pagina visibile, aggiornamenti ottimistici, coda offline in localStorage (`hq.shopping.queue`) inviata con /sync (client_uuid)
 ├── components/
 │   ├── ui/              # Button, Input, Modal, Sheet, Tabs, Badge, EmptyState, Avatar, IconPicker
@@ -97,17 +99,25 @@ src/lib/
 - Raggruppata per reparto nell'ordine della famiglia; articoli spuntati in fondo, barrati.
 - QuickAdd in alto con suggerimenti da preferiti e ingredienti.
 - Polling ogni 5 s con `If-None-Match` solo quando la pagina è visibile (`document.visibilityState`).
-- **Offline**: operazioni in coda (`localStorage`), applicate in locale subito, inviate con `/sync` al ritorno online (evento `online` o polling successivo); le aggiunte hanno `client_uuid` (idempotenza).
+- **Offline**: operazioni in coda (`localStorage`), applicate in locale subito, inviate con `/sync` al ritorno online (evento `online` o polling successivo); le aggiunte hanno `client_uuid` (idempotenza). Riaprendo l'app senza rete la lista viene dall'ultima copia salvata con sopra la coda.
+
+### Uso senza connessione
+- Solo **menù e spesa**: i punti (compiti, premi, approvazioni) richiedono la rete, per non creare movimenti fuori da `PointsService`.
+- La sessione riparte anche offline: `/me` (genitore, dispositivo, figlio) viene dalla copia salvata; un 401 vero cancella comunque il token.
+- All'avvio (1,5 s dopo, una volta per sessione) `utils/offline.ts` → `warmOfflineCache()` scarica menù della settimana corrente, reparti e liste spesa (per il figlio solo se `can_check_shopping`), così sono disponibili anche se non sono mai stati aperti.
+- Menù offline in **sola lettura** (genitore: niente modifica slot, note, copia, modelli, suggerimenti, genera spesa; figlio: niente voti/proposte); una settimana mai aperta mostra `offline.not_saved`.
+- `OfflineBanner` nei layout (genitore e figlio), nascosto nelle pagine spesa che hanno il loro avviso sulle modifiche in coda.
 - Swipe a sinistra = elimina, tap = spunta, long-press = modifica.
 
 ## PWA
-- Niente `@vite-pwa/sveltekit`: service worker nativo di SvelteKit 3 in `src/service-worker/index.ts` (con il suo `tsconfig.json` che estende `$app/tsconfig/service-worker`, controllato da `npm run check` con `tsc`). Moduli: `$app/manifest`, `$app/env`, `$app/service-worker`. Precache app shell, fallback a `index.html` per le navigazioni offline, rete-prima con copia in cache per `/api/v1/shopping-lists/*`, solo rete per il resto delle API e `/uploads`.
+- Niente `@vite-pwa/sveltekit`: service worker nativo di SvelteKit 3 in `src/service-worker/index.ts` (con il suo `tsconfig.json` che estende `$app/tsconfig/service-worker`, controllato da `npm run check` con `tsc`). Moduli: `$app/manifest`, `$app/env`, `$app/service-worker`. Precache app shell, fallback a `index.html` per le navigazioni offline, solo rete per le API e `/uploads`: le copie offline dei dati sono gestite dall'app (`offline-cache.ts`), che sa quando sono vecchie e le mostra in sola lettura (un 200 dalla cache del SW lo nasconderebbe). Le foto delle ricette non sono disponibili offline.
 - Manifest `static/manifest.webmanifest`, icone in `static/app-icons/` (non `icons/`: su Debian/Ubuntu `/icons/` è un Alias globale di Apache) (any + maskable, 192/512).
 - Payload push `{type, params, url}` tradotto nel service worker con `t('notifications.<type>.title|body')`; il clic apre `url`. Gli e2e bloccano i service worker (`serviceWorkers: 'block'`), altrimenti le fetch del SW sfuggirebbero ai mock.
 - Push: richiesta permesso solo dopo un'azione esplicita (`PushToggle` in Impostazioni e nella pagina Oggi del figlio), mai all'avvio.
 
 ## Test
-- Vitest: utils (date, unità), client API (envelope, errori), store shopping (coda offline).
+- Vitest: utils (date, unità), client API (envelope, errori), cache offline (`offline-cache.spec.ts`), store shopping (coda offline).
+- E2E `offline.e2e.ts`: menù e spesa dopo un ricaricamento senza rete (genitore e figlio), logout che cancella le copie.
 - Component test (`vitest-browser-svelte`, file `*.svelte.spec.ts`): Button, TaskCard, RecurrencePicker, WeekGrid.
 - Playwright E2E (`src/e2e/*.e2e.ts`) contro un finto backend in memoria (`src/e2e/mock-api.ts`, da tenere allineato a `04-api.md`): il job CI frontend non ha l'API.
 - E2E live (`src/e2e-live/`, `playwright.live.config.ts`, `npm run test:e2e:live`): stesso browser contro il backend vero via dev server; richiede `HQ_PARENT_TOKEN` (token di `demo-anna` da `php yii seed/demo`). Non gira in CI.

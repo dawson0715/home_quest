@@ -62,6 +62,7 @@ Ogni milestone termina con: test verdi, demo funzionante con `seed/demo`, doc ag
 - [x] M7.2 Email riepilogo settimanale (opt-in `weekly_email`, email del genitore da console)
 - [x] M7.3 Endpoint `/stats` + pagina statistiche
 - [x] M7.4 PWA: manifest, icone, service worker (`src/service-worker/`: app shell, fallback SPA offline, rete-prima per la spesa, push tradotte da it.json), bottoni notifiche (impostazioni genitore, oggi figlio)
+- [x] M7.5 Offline per menù e spesa: copie delle GET nell'app (`offline-cache.ts`, sessione inclusa), pre-caricamento della settimana, menù in sola lettura, avviso offline; il SW non mette più in cache le API
 
 ## M8 — Rifinitura e rilascio
 - [x] M8.1 Privacy: export dati, cancellazione famiglia, informativa, pagina impostazioni privacy

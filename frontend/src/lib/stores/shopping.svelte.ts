@@ -1,5 +1,7 @@
+import { rememberResponse } from '../api/client';
 import { getShoppingList, syncShoppingList } from '../api/endpoints/shopping';
 import { ApiError, NETWORK_ERROR } from '../api/errors';
+import { connectivity } from './connectivity.svelte';
 import type { ShoppingItem, ShoppingItemInput, ShoppingList, SyncOp } from '../api/types';
 
 const QUEUE_KEY = 'hq.shopping.queue';
@@ -63,10 +65,15 @@ export class ShoppingStore {
       this.list = null;
       this.#etag = undefined;
     }
-    await this.flush(listId);
+    try {
+      await this.flush(listId);
+    } catch (e) {
+      // offline: keep the queue and show the last saved copy with the queue on top
+      if (!(e instanceof ApiError && e.code === NETWORK_ERROR)) throw e;
+    }
     const fresh = await getShoppingList(listId, this.#etag, this.opts);
     if (fresh) this.apply(fresh);
-    this.offline = false;
+    this.offline = connectivity.offline;
   }
 
   /** Polls while the page is visible. Returns a stop function. */
@@ -88,7 +95,9 @@ export class ShoppingStore {
     clearInterval(this.#timer);
   }
 
+  /** `list` is a server snapshot: it also becomes the offline copy. */
   apply(list: ShoppingList): void {
+    rememberResponse(`shopping-lists/${list.id}`, list, this.opts);
     this.list = list;
     this.#etag = `"v${list.version}"`;
     this.#reapplyQueue();

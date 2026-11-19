@@ -10,8 +10,9 @@
     saveMealTemplate,
     updateMealPlanNotes
   } from '#lib/api/endpoints/meals.ts';
+  import { rememberResponse } from '#lib/api/client.ts';
   import { generateShoppingList, listShoppingLists } from '#lib/api/endpoints/shopping.ts';
-  import { ApiError } from '#lib/api/errors.ts';
+  import { ApiError, NETWORK_ERROR } from '#lib/api/errors.ts';
   import type { MealEntry, MealPlan, MealSlot, MealTemplate } from '#lib/api/types.ts';
   import MenuSuggest from '#lib/components/meals/MenuSuggest.svelte';
   import SlotEditor from '#lib/components/meals/SlotEditor.svelte';
@@ -19,6 +20,7 @@
   import Input from '#lib/components/ui/Input.svelte';
   import Modal from '#lib/components/ui/Modal.svelte';
   import { errorMessage, t } from '#lib/i18n/index.ts';
+  import { connectivity } from '#lib/stores/connectivity.svelte.ts';
   import { toasts } from '#lib/stores/toast.svelte.ts';
   import { addDays, formatDay, formatShortDay, todayInRome } from '#lib/utils/dates.ts';
   import type { PageProps } from './$types';
@@ -34,6 +36,11 @@
   let templateName = $state('');
   let mobileDay = $state(0);
   let suggestOpen = $state(false);
+  /** offline and this week was never saved on the device */
+  let unavailable = $state(false);
+
+  /** offline: the last saved copy is shown read-only */
+  const readOnly = $derived(connectivity.offline);
 
   const week = $derived(data.week);
   const days = $derived([0, 1, 2, 3, 4, 5, 6].map((i) => addDays(week, i)));
@@ -44,18 +51,27 @@
 
   async function load() {
     try {
+      unavailable = false;
       plan = await getMealPlan(week);
       notes = plan.notes ?? '';
       const todayIndex = days.indexOf(todayInRome());
       mobileDay = todayIndex >= 0 ? todayIndex : 0;
     } catch (e) {
-      fail(e);
+      if (e instanceof ApiError && e.code === NETWORK_ERROR) {
+        plan = null;
+        unavailable = true;
+      } else fail(e);
     }
   }
 
   $effect(() => {
     void week;
     load();
+  });
+
+  // edits change the plan locally: keep the offline copy in step
+  $effect(() => {
+    if (plan && !readOnly) rememberResponse(`meal-plans/${week}`, $state.snapshot(plan));
   });
 
   function slotOf(day: number, meal: string): MealSlot | undefined {
@@ -179,12 +195,14 @@
             <div class="flex gap-1">
               <button
                 type="button"
-                class="min-h-9 rounded px-2 text-xs font-semibold text-success hover:bg-surface"
+                class="min-h-9 rounded px-2 text-xs font-semibold text-success hover:bg-surface disabled:opacity-50"
+                disabled={readOnly}
                 onclick={() => review(entry, 'accept')}>{t('menu.accept')}</button
               >
               <button
                 type="button"
-                class="min-h-9 rounded px-2 text-xs text-danger hover:bg-surface"
+                class="min-h-9 rounded px-2 text-xs text-danger hover:bg-surface disabled:opacity-50"
+                disabled={readOnly}
                 onclick={() => review(entry, 'reject')}>{t('menu.reject')}</button
               >
             </div>
@@ -196,7 +214,8 @@
       <div class="mt-auto flex flex-wrap gap-1 pt-1">
         <button
           type="button"
-          class="min-h-9 rounded px-2 text-xs font-semibold text-brand hover:bg-surface-muted"
+          class="min-h-9 rounded px-2 text-xs font-semibold text-brand hover:bg-surface-muted disabled:opacity-50"
+          disabled={readOnly}
           aria-label={t('menu.edit_slot', {
             meal: t(`meal_type.${slot.meal_type}`),
             day: formatDay(slot.date)
@@ -206,7 +225,8 @@
         {#if slot.id && slot.entries.some((e) => e.status === 'planned')}
           <button
             type="button"
-            class="min-h-9 rounded px-2 text-xs hover:bg-surface-muted"
+            class="min-h-9 rounded px-2 text-xs hover:bg-surface-muted disabled:opacity-50"
+            disabled={readOnly}
             title={t('menu.help_cook')}
             aria-label={t('menu.help_cook')}
             onclick={() => helpCook(slot)}>👩‍🍳</button
@@ -235,13 +255,21 @@
     </div>
   </div>
   <div class="flex flex-wrap gap-2">
-    <Button onclick={() => (suggestOpen = true)}>{t('menu.suggest.button')}</Button>
-    <Button variant="secondary" onclick={copyLastWeek}>{t('menu.copy_last_week')}</Button>
-    <Button variant="secondary" onclick={openTemplates}>{t('menu.use_template')}</Button>
-    <Button variant="ghost" onclick={() => (saveTemplateOpen = true)}
+    <Button disabled={readOnly} onclick={() => (suggestOpen = true)}
+      >{t('menu.suggest.button')}</Button
+    >
+    <Button variant="secondary" disabled={readOnly} onclick={copyLastWeek}
+      >{t('menu.copy_last_week')}</Button
+    >
+    <Button variant="secondary" disabled={readOnly} onclick={openTemplates}
+      >{t('menu.use_template')}</Button
+    >
+    <Button variant="ghost" disabled={readOnly} onclick={() => (saveTemplateOpen = true)}
       >{t('menu.save_template')}</Button
     >
-    <Button onclick={generateShopping}>🛒 {t('shopping.generate_from_planner')}</Button>
+    <Button disabled={readOnly} onclick={generateShopping}
+      >🛒 {t('shopping.generate_from_planner')}</Button
+    >
   </div>
 
   {#if plan}
@@ -310,10 +338,15 @@
         <textarea
           class="min-h-20 rounded-lg border border-line p-2"
           bind:value={notes}
+          readonly={readOnly}
           maxlength={2000}></textarea>
       </label>
-      <div><Button type="submit" variant="secondary">{t('common.save')}</Button></div>
+      <div>
+        <Button type="submit" variant="secondary" disabled={readOnly}>{t('common.save')}</Button>
+      </div>
     </form>
+  {:else if unavailable}
+    <p class="rounded-card bg-surface p-4 text-ink-muted">{t('offline.not_saved')}</p>
   {:else}
     <p class="text-ink-muted">{t('common.loading')}</p>
   {/if}

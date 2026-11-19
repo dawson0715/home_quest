@@ -62,6 +62,24 @@ describe('ShoppingStore', () => {
     expect((second.headers as Record<string, string>)['If-None-Match']).toBe('"v1"');
   });
 
+  it('shows the saved copy with queued changes after a reload while offline', async () => {
+    const { ShoppingStore } = await import('./shopping.svelte');
+    fetchMock.mockResolvedValueOnce(ok(base));
+    await new ShoppingStore().load(1);
+
+    // "reload" offline: a fresh store, queued op from the previous page, no network
+    fetchMock.mockRejectedValue(new TypeError('offline'));
+    const before = new ShoppingStore();
+    before.list = structuredClone(base);
+    await before.setChecked(before.list.items[0], true);
+    const store = new ShoppingStore();
+    await store.load(1);
+
+    expect(store.list?.items[0]).toMatchObject({ label: 'Latte', checked: true });
+    expect(store.pending).toBe(1);
+    expect(store.offline).toBe(true);
+  });
+
   it('queues operations while offline and flushes them with /sync', async () => {
     const { ShoppingStore } = await import('./shopping.svelte');
     fetchMock.mockResolvedValueOnce(ok(base));

@@ -115,6 +115,6 @@ Il figlio **non ha email né password**: accede da un dispositivo collegato tram
 
 ## 7. Requisiti non funzionali (in parole semplici)
 - Funziona da telefono, tablet e PC; usabile da un bambino di 5 anni (icone grandi, poco testo, feedback sonoro/visivo).
-- Veloce anche con connessione scarsa; la lista spesa funziona offline e si sincronizza dopo.
+- Veloce anche con connessione scarsa; senza rete menù (in sola lettura) e lista spesa restano consultabili, e la spesa si può spuntare e aggiornare: le modifiche partono al ritorno della connessione. I punti richiedono sempre la rete.
 - Dati dei bambini protetti (GDPR): niente pubblicità, niente tracciamento, cancellazione completa su richiesta.
 - In italiano all'avvio, predisposta per altre lingue.

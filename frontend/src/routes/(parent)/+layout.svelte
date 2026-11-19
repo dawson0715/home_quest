@@ -3,7 +3,9 @@
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
   import { t } from '#lib/i18n/index.ts';
+  import OfflineBanner from '#lib/components/ui/OfflineBanner.svelte';
   import { session } from '#lib/stores/session.svelte.ts';
+  import { warmOfflineCache } from '#lib/utils/offline.ts';
   import type { LayoutProps } from './$types';
 
   let { children }: LayoutProps = $props();
@@ -40,6 +42,27 @@
   ];
 
   let dialog = $state<HTMLDialogElement>();
+
+  // Menu and shopping readable offline: keep a copy of this week's data
+  $effect(() => {
+    const token = session.token;
+    const settings = session.me?.family?.settings;
+    if (!token || !settings) return;
+    const timer = setTimeout(() => {
+      warmOfflineCache({
+        session: token,
+        weekStartsOn: settings.week_starts_on,
+        shopping: true,
+        parent: true
+      });
+    }, 1500);
+    return () => clearTimeout(timer);
+  });
+
+  // shopping pages show their own banner (pending changes)
+  const showOffline = $derived(
+    !page.url.pathname.startsWith(resolve('/(parent)/shopping/[[id]]', {}))
+  );
 
   const isActive = (href: string) => page.url.pathname.startsWith(href);
   const title = $derived(drawer.flat().find((item) => isActive(item.href))?.label ?? t('app.name'));
@@ -131,6 +154,7 @@
   </header>
 
   <main class="mx-auto w-full max-w-5xl p-4 pb-28 lg:pb-8">
+    {#if showOffline}<OfflineBanner class="mb-4" />{/if}
     {@render children()}
   </main>
 

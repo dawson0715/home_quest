@@ -5,12 +5,13 @@
     proposeDish,
     voteMealEntry
   } from '#lib/api/endpoints/meals.ts';
-  import { ApiError } from '#lib/api/errors.ts';
+  import { ApiError, NETWORK_ERROR } from '#lib/api/errors.ts';
   import type { MealEntry, MealPlan, MealSlot, RecipeSummary } from '#lib/api/types.ts';
   import Button from '#lib/components/ui/Button.svelte';
   import Input from '#lib/components/ui/Input.svelte';
   import Modal from '#lib/components/ui/Modal.svelte';
   import { errorMessage, t } from '#lib/i18n/index.ts';
+  import { connectivity } from '#lib/stores/connectivity.svelte.ts';
   import { deviceSession } from '#lib/stores/device.svelte.ts';
   import { toasts } from '#lib/stores/toast.svelte.ts';
   import { formatDay } from '#lib/utils/dates.ts';
@@ -22,6 +23,9 @@
   let proposing = $state<MealSlot | null>(null);
   let recipes = $state<RecipeSummary[]>([]);
   let freeText = $state('');
+  let unavailable = $state(false);
+  /** offline: votes and proposals wait for the connection */
+  const readOnly = $derived(connectivity.offline);
 
   const token = $derived(deviceSession.childToken ?? '');
   const days = $derived(
@@ -35,9 +39,11 @@
 
   async function load() {
     try {
+      unavailable = false;
       plan = await getMealPlan(data.week, { token });
     } catch (e) {
-      fail(e);
+      if (e instanceof ApiError && e.code === NETWORK_ERROR) unavailable = true;
+      else fail(e);
     }
   }
 
@@ -101,20 +107,22 @@
                 {/if}
                 <button
                   type="button"
-                  class="grid size-14 place-items-center rounded-full text-3xl {entry.votes.mine ===
-                  1
+                  class="grid size-14 place-items-center rounded-full text-3xl disabled:opacity-50 {entry
+                    .votes.mine === 1
                     ? 'bg-success/20'
                     : 'bg-surface-muted'}"
+                  disabled={readOnly}
                   aria-pressed={entry.votes.mine === 1}
                   aria-label={t('kid_menu.like')}
                   onclick={() => vote(entry, 1)}>👍</button
                 >
                 <button
                   type="button"
-                  class="grid size-14 place-items-center rounded-full text-3xl {entry.votes.mine ===
-                  -1
+                  class="grid size-14 place-items-center rounded-full text-3xl disabled:opacity-50 {entry
+                    .votes.mine === -1
                     ? 'bg-danger/20'
                     : 'bg-surface-muted'}"
+                  disabled={readOnly}
                   aria-pressed={entry.votes.mine === -1}
                   aria-label={t('kid_menu.dislike')}
                   onclick={() => vote(entry, -1)}>👎</button
@@ -124,7 +132,7 @@
               <p class="text-ink-muted">{t('kid_menu.empty_day')}</p>
             {/each}
             <div>
-              <Button variant="ghost" onclick={() => openProposal(slot)}>
+              <Button variant="ghost" disabled={readOnly} onclick={() => openProposal(slot)}>
                 💡 {t('kid_menu.propose')}
               </Button>
             </div>
@@ -132,6 +140,8 @@
         {/each}
       </section>
     {/each}
+  {:else if unavailable}
+    <p class="rounded-card bg-surface p-6 text-center text-xl">{t('offline.not_saved')}</p>
   {:else}
     <p class="text-center text-ink-muted">{t('common.loading')}</p>
   {/if}
